@@ -1,0 +1,321 @@
+# C:\sicab\sicab-backend\src\modules\razas\razas.http
+# ----------------------------------------------------------------------
+# DEFINICIÓN DE VARIABLES
+# ----------------------------------------------------------------------
+@baseUrl = http://localhost:3010/api
+@baseUrl_razas = {{baseUrl}}/razas
+@baseUrl_parametros = {{baseUrl}}/parametros-globales
+@rest-client.previewOption = body
+
+### 1. OBTENER TOKEN DE AUTENTICACIÓN.
+# Se debe presionar primero.
+# @name login
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "ADMIN",
+    "password": "12345678"
+}
+
+### 2. GUARDAR TOKEN EN VARIABLE.
+# No se debe presionar es automatico.
+@authToken = {{login.response.body.token}}
+
+# ==============================================================================
+# AUTENTICACIÓN - USUARIO 3
+# ==============================================================================
+
+### 1.b OBTENER TOKEN USUARIO 3
+# @name loginUser3
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "PRUEBA",
+    "password": "12345678"
+}
+
+### 2.b GUARDAR TOKEN USUARIO 3
+# @authToken = {{loginUser3.response.body.token}}
+
+# ==============================================================================
+# ENDPOINT EXTRAS
+# ==============================================================================
+
+### OBTENER PARÁMETRO foto_raza_config POR CLAVE
+GET {{baseUrl_parametros}}?clave=foto_raza_config
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# LISTAR RAZAS (GET)
+# ==============================================================================
+
+### LISTAR TODAS (Activos + Históricos por defecto)
+GET {{baseUrl_razas}}
+Authorization: Bearer {{authToken}}
+
+### LISTAR POR ESTADO ACTIVOS (1000)
+GET {{baseUrl_razas}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### LISTAR POR ESTADO BORRADOS (1001)
+GET {{baseUrl_razas}}?estado_id=1001
+Authorization: Bearer {{authToken}}
+
+### LISTAR POR ESTADO HISTÓRICOS (1002)
+GET {{baseUrl_razas}}?estado_id=1002
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# BÚSQUEDA POR TEXTO (q)
+# ==============================================================================
+
+### BÚSQUEDA FLEXIBLE (contiene la palabra)
+GET {{baseUrl_razas}}?q=HOLSTEIN
+Authorization: Bearer {{authToken}}
+
+### BÚSQUEDA FLEXIBLE por código
+GET {{baseUrl_razas}}?q=HOL
+Authorization: Bearer {{authToken}}
+
+### BÚSQUEDA FLEXIBLE por origen
+GET {{baseUrl_razas}}?q=PAISES
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# PAGINACIÓN
+# ==============================================================================
+
+### PÁGINA 1: Registros 0 al 15
+GET {{baseUrl_razas}}?offset=0&limit=16
+Authorization: Bearer {{authToken}}
+
+### PÁGINA 2: Registros 16 al 31
+GET {{baseUrl_razas}}?offset=16&limit=16
+Authorization: Bearer {{authToken}}
+
+### Paginación con filtro de estado
+GET {{baseUrl_razas}}?estado_id=1000&offset=0&limit=5
+Authorization: Bearer {{authToken}}
+
+### Paginación con búsqueda
+GET {{baseUrl_razas}}?estado_id=1000&offset=0&limit=2&q=HOLSTEIN
+Authorization: Bearer {{authToken}}
+
+### Últimos 10 registros
+GET {{baseUrl_razas}}?offset=10&limit=10
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# ORDENAMIENTO
+# ==============================================================================
+
+### ORDENAR POR RAZA (Ascendente)
+GET {{baseUrl_razas}}?estado_id=1000&sortField=raza&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR RAZA (Descendente)
+GET {{baseUrl_razas}}?sortField=raza&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR ID (Descendente)
+GET {{baseUrl_razas}}?sortField=raza_id&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR CÓDIGO (Ascendente)
+GET {{baseUrl_razas}}?sortField=codigo&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR PESO PROMEDIO ADULTO (Ascendente)
+GET {{baseUrl_razas}}?sortField=peso_promedio_adulto&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR ORIGEN (Ascendente)
+GET {{baseUrl_razas}}?sortField=origen&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR FECHA REGISTRO (Más recientes primero)
+GET {{baseUrl_razas}}?sortField=fecha_registro&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR + FILTRO + PAGINACIÓN
+GET {{baseUrl_razas}}?estado_id=1000&sortField=raza&sortOrder=1&offset=0&limit=5
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# OBTENER POR ID
+# ==============================================================================
+
+### OBTENER RAZA POR ID
+GET {{baseUrl_razas}}/2
+Authorization: Bearer {{authToken}}
+
+### Obtener raza específica (NINGUNA - Registro comodín)
+GET {{baseUrl_razas}}/1
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CRUD RAZA
+# ==============================================================================
+
+# Definir variable al inicio del archivo
+@foto_path = C:/sicab/sicab-backend/uploads/razas_fotos/holstein.png
+
+### CREAR RAZA (JSON) - SIN FOTO
+POST {{baseUrl_razas}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "tipo_semoviente_id": 2,
+    "raza": "HOLSTEIN",
+    "codigo": "HOL",
+    "descripcion": "RAZA LECHERA DE ORIGEN EUROPEO, ALTA PRODUCCION DE LECHE, PELO BLANCO Y NEGRO",
+    "origen": "PAISES BAJOS",
+    "peso_promedio_adulto": 600.00
+}
+
+### CREAR RAZA (MULTIPART) - CON FOTO
+POST {{baseUrl_razas}}
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="raza"
+
+JERSEY
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="codigo"
+
+JER
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="descripcion"
+
+RAZA LECHERA DE PEQUENO PORTE, ALTA CONCENTRACION DE GRASA EN LA LECHE
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="origen"
+
+ISLA DE JERSEY - REINO UNIDO
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="peso_promedio_adulto"
+
+450.00
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="foto"; filename="jersey.png"
+Content-Type: image/png
+
+< {{foto_path}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+# ==============================================================================
+# ACTUALIZAR RAZA
+# ==============================================================================
+
+### OBTENER RAZA ANTES DE ACTUALIZAR
+GET {{baseUrl_razas}}/3
+Authorization: Bearer {{authToken}}
+
+### ACTUALIZAR TODOS LOS CAMPOS (JSON)
+PATCH {{baseUrl_razas}}/3
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "tipo_semoviente_id": 2,
+    "raza": "PARDO SUIZO",
+    "codigo": "PSU",
+    "descripcion": "RAZA DE DOBLE PROPOSITO, RESISTENTE A CLIMAS VARIADOS",
+    "origen": "SUIZA",
+    "peso_promedio_adulto": 650.00
+}
+
+### ACTUALIZAR SOLO UN CAMPO
+PATCH {{baseUrl_razas}}/3
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "descripcion": "RAZA DE DOBLE PROPOSITO, ACTUALIZADA"
+}
+
+### ACTUALIZAR FOTO (MULTIPART) - CAMBIAR IMAGEN
+PATCH {{baseUrl_razas}}/3
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="foto"; filename="pardo_suizo_nuevo.png"
+Content-Type: image/png
+
+< {{foto_path}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### ACTUALIZAR PESO PROMEDIO ADULTO
+PATCH {{baseUrl_razas}}/3
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "peso_promedio_adulto": 680.50
+}
+
+# ==============================================================================
+# ELIMINAR RAZA (Soft Delete)
+# ==============================================================================
+
+### ELIMINAR RAZA (ACTIVO → BORRADO)
+DELETE {{baseUrl_razas}}/8
+Authorization: Bearer {{authToken}}
+
+### ELIMINAR RAZA CON DEPENDENCIAS (Debería dar error)
+DELETE {{baseUrl_razas}}/2
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# ARCHIVAR / DESARCHIVAR (Cambio de estado)
+# ==============================================================================
+
+### ARCHIVAR RAZA (ACTIVO → HISTÓRICO)
+PATCH {{baseUrl_razas}}/6/archivar
+Authorization: Bearer {{authToken}}
+
+### DESARCHIVAR RAZA (HISTÓRICO → ACTIVO)
+PATCH {{baseUrl_razas}}/6/desarchivar
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CASOS DE USO COMBINADOS (Escenarios reales)
+# ==============================================================================
+
+### 1. Buscar razas activas que contengan "HOLSTEIN", ordenadas por nombre
+GET {{baseUrl_razas}}?estado_id=1000&q=HOLSTEIN&sortField=raza&sortOrder=1&offset=0&limit=10
+Authorization: Bearer {{authToken}}
+
+### 2. Buscar razas activas por código "HOL"
+GET {{baseUrl_razas}}?estado_id=1000&q=HOL&offset=0&limit=5
+Authorization: Bearer {{authToken}}
+
+### 3. Listar todas las razas históricas, ordenadas por fecha de registro descendente
+GET {{baseUrl_razas}}?estado_id=1002&sortField=fecha_registro&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### 4. Buscar razas activas por origen "SUIZA"
+GET {{baseUrl_razas}}?estado_id=1000&q=SUIZA&sortField=origen&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+### 5. Listar razas activas ordenadas por id (para combos)
+GET {{baseUrl_razas}}?estado_id=1000&sortField=raza_id&sortOrder=-1&limit=100
+Authorization: Bearer {{authToken}}
+
+### 6. Listar razas activas ordenadas por código (para combos)
+GET {{baseUrl_razas}}?estado_id=1000&sortField=codigo&sortOrder=1&limit=100
+Authorization: Bearer {{authToken}}
+
+### 7. Buscar razas por peso promedio mayor a 600 (usando sortField)
+GET {{baseUrl_razas}}?estado_id=1000&sortField=peso_promedio_adulto&sortOrder=-1&offset=0&limit=10
+Authorization: Bearer {{authToken}}
+
+### 8. Obtener raza con ID 1 (NINGUNA - Registro comodín)
+GET {{baseUrl_razas}}/1
+Authorization: Bearer {{authToken}}

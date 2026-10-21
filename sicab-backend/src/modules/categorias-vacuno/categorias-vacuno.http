@@ -1,0 +1,125 @@
+# C:\sicab\sicab-backend\src\modules\categorias-vacuno\categorias-vacuno.http
+# ----------------------------------------------------------------------
+# DEFINICIÓN DE VARIABLES
+# ----------------------------------------------------------------------
+@baseUrl = http://localhost:3010/api
+@baseUrl_categorias = {{baseUrl}}/categorias-vacuno
+@rest-client.previewOption = body
+
+### 1. OBTENER TOKEN DE AUTENTICACIÓN
+# @name login
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "ADMIN",
+    "password": "12345678"
+}
+
+### 2. GUARDAR TOKEN EN VARIABLE
+@authToken = {{login.response.body.token}}
+
+# ==============================================================================
+# CONSTANTES DE REFERENCIA
+# ==============================================================================
+# Estados: 1000=ACTIVO, 1001=BORRADO, 1002=HISTÓRICO
+# es_productor_leche: 6350=NO_PRODUCTOR, 6351=PRODUCTOR
+# sexo_biologico_permitido_id: 6300=MACHO, 6301=HEMBRA
+
+# ==============================================================================
+# LISTAR / FILTRAR
+# ==============================================================================
+
+### LISTAR TODAS (Activos + Históricos por defecto)
+GET {{baseUrl_categorias}}
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR ESTADO ACTIVO
+GET {{baseUrl_categorias}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR ESTADO HISTÓRICO
+GET {{baseUrl_categorias}}?estado_id=1002
+Authorization: Bearer {{authToken}}
+
+### FILTRAR HEMBRAS PRODUCTORAS DE LECHE
+GET {{baseUrl_categorias}}?estado_id=1000&sexo_biologico_permitido_id=6301&es_productor_leche=6351
+Authorization: Bearer {{authToken}}
+
+### FILTRAR USANDO ALIAS `sexo`
+GET {{baseUrl_categorias}}?estado_id=1000&sexo=6300
+Authorization: Bearer {{authToken}}
+
+### BÚSQUEDA FLEXIBLE
+GET {{baseUrl_categorias}}?q=LECHERA
+Authorization: Bearer {{authToken}}
+
+### BÚSQUEDA EXACTA
+GET {{baseUrl_categorias}}?q=VACA_LECHERA&exactMatch=1
+Authorization: Bearer {{authToken}}
+
+### PAGINACIÓN + ORDENAMIENTO
+GET {{baseUrl_categorias}}?estado_id=1000&offset=0&limit=10&sortField=categoria&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+### OBTENER POR ID
+GET {{baseUrl_categorias}}/2
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CREAR (un solo ejemplo)
+# ==============================================================================
+
+### CREAR CATEGORÍA
+POST {{baseUrl_categorias}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "categoria": "VACA_PRODUCTORA_ALTA",
+    "codigo": "VPA",
+    "descripcion": "HEMBRA ADULTA CON PRODUCCION SUPERIOR A 20 LITROS DIARIOS",
+    "edad_min_meses": 24,
+    "edad_max_meses": 120,
+    "es_productor_leche": 6351,
+    "sexo_biologico_permitido_id": 6301
+}
+
+# ==============================================================================
+# EDITAR (un solo ejemplo)
+# ==============================================================================
+
+### ACTUALIZAR CATEGORÍA
+PATCH {{baseUrl_categorias}}/15
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "categoria": "VACA_PRODUCTORA_ALTA_ACTUALIZADA",
+    "codigo": "VPAA",
+    "descripcion": "HEMBRA ADULTA CON PRODUCCION SUPERIOR A 25 LITROS DIARIOS",
+    "edad_min_meses": 24,
+    "edad_max_meses": 120,
+    "es_productor_leche": 6351,
+    "sexo_biologico_permitido_id": 6301
+}
+
+# ==============================================================================
+# ARCHIVAR / DESARCHIVAR
+# ==============================================================================
+
+### ARCHIVAR (ACTIVO → HISTÓRICO)
+PATCH {{baseUrl_categorias}}/15/archivar
+Authorization: Bearer {{authToken}}
+
+### DESARCHIVAR (HISTÓRICO → ACTIVO)
+PATCH {{baseUrl_categorias}}/15/desarchivar
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# ELIMINAR
+# ==============================================================================
+
+### ELIMINAR (ACTIVO → BORRADO)
+DELETE {{baseUrl_categorias}}/15
+Authorization: Bearer {{authToken}}

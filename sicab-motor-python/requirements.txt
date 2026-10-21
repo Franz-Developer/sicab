@@ -1,0 +1,1 @@
+# C:\sistemas\sicab\sicab-motor-python\requirements.txt

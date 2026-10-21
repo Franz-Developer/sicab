@@ -1,0 +1,1169 @@
+/* C:\sicab\sicab-frontend\app\assets\css\main.postcss */
+
+/* ============================================================
+   1. DIRECTIVAS TAILWIND (con CSS Layers)
+   ============================================================ */
+@layer tailwind-base, primevue, tailwind-utilities;
+
+@layer tailwind-base {
+    @tailwind base;
+}
+
+@layer tailwind-utilities {
+    @tailwind components;
+    @tailwind utilities;
+}
+
+/* ============================================================
+   2. VARIABLES GLOBALES
+   ============================================================ */
+:root {
+    /* Colores principales */
+    --primary-color: #2563eb;
+    --primary-dark: #113f67;
+    --primary-dark-hover: #0d3152;
+    --secondary-color: #ea580c;
+    --secondary-hover: #c2410c;
+    --danger-color: #c53030;
+    --danger-hover: #9b2c2c;
+
+    /* Neutros */
+    --border-color: #94a3b8;
+    --border-color-soft: #cbd5e1;
+    --text-main: #1e293b;
+    --text-muted: #475569;   /* 👈 ANTES: #64748b → AHORA: #475569 (un poco más oscuro) */
+    --bg-disabled: #f1f5f9;
+    --white: #ffffff;
+
+    /* Foco unificado (VERDE) */
+    --focus-color: #10b981;
+    --focus-ring: 0 0 0 2px rgba(16, 185, 129, 0.25);
+
+    /* Radios */
+    --radius-std: 0.5rem;
+    --radius-sm: 0.4rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+
+    /* Tipografía base */
+    --font-size-base: 11px;
+
+    /* Paddings de diálogo (fuente de verdad) */
+    --dialog-header-padding: 1rem 1.5rem 0.25rem 1.5rem;
+    --dialog-content-padding: 0.25rem 1.5rem 0.75rem 1.5rem;
+    --dialog-footer-padding: 0.5rem 1.5rem 1rem 1.5rem;
+    --dialog-header-padding-mobile: 0.75rem 1rem 0.25rem 1rem;
+    --dialog-content-padding-mobile: 0.25rem 1rem 0.5rem 1rem;
+    --dialog-footer-padding-mobile: 0.5rem 1rem 0.75rem 1rem;
+
+    /* Paginador (medidas unificadas) */
+    --paginator-btn-size: 1.85rem;
+    --paginator-btn-radius: var(--radius-sm);
+    --paginator-btn-font: 0.75rem;
+
+    /* Colores paginador */
+    --paginator-bg: #f0f9ff;
+    --paginator-border: #bae6fd;
+    --paginator-btn-bg: #dbeafe;
+    --paginator-btn-bg-hover: #bfdbfe;
+    --paginator-btn-border: #60a5fa;
+    --paginator-btn-color: var(--primary-dark);
+}
+
+/* ============================================================
+   3. RESET / BASE
+   ============================================================ */
+body {
+    @apply antialiased bg-white text-slate-800;
+    color: var(--text-main);
+}
+
+::placeholder {
+    color: var(--text-muted);
+    opacity: 0.8;
+}
+
+/* ============================================================
+   4. PRIMITIVAS PRIMEVUE
+   ============================================================ */
+
+/* --- 4.1 INPUTS --- */
+.p-inputtext {
+    padding: 0.375rem 0.625rem;
+    font-size: var(--font-size-base);
+    line-height: 1.2;
+    height: auto;
+}
+
+.p-inputtext.p-inputtext-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: var(--font-size-base);
+}
+
+/* Inputs con ícono (fecha/hora/genérico) */
+:is(.has-icon, input.has-icon[type="date"], input.has-icon[type="time"]) {
+    padding-left: 2rem !important;
+}
+
+/* Inputs fecha/hora (sin/con ícono) — selector unificado */
+:is(input[type="date"], input[type="time"]) {
+    &:not(.has-icon) {
+        min-width: 0 !important;
+        padding-left: 0.375rem !important;
+        padding-right: 0.25rem !important;
+        font-size: var(--font-size-base) !important;
+    }
+
+    &::-webkit-calendar-picker-indicator {
+        padding: 0 !important;
+        margin-left: 0 !important;
+        cursor: pointer;
+    }
+
+    &::-moz-calendar-picker-indicator {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+}
+
+/* --- 4.2 SELECTS --- */
+.p-select {
+    font-size: var(--font-size-base) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    min-height: 32px !important;
+}
+
+.p-select .p-select-label {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 0.625rem !important;
+    line-height: 1 !important;
+    min-height: 30px !important;
+    font-size: var(--font-size-base) !important;
+}
+
+.base-select .p-select-label {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.25 !important;
+    padding: 0.25rem 2rem 0.25rem 0.625rem !important;
+    min-height: 1.5rem !important;
+}
+
+.p-select-panel {
+    min-width: 100% !important;
+    max-width: 600px !important;
+    width: auto !important;
+}
+
+.p-select-items-wrapper {
+    max-height: 300px !important;
+}
+
+.p-select-option {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    padding: 0.5rem 0.75rem !important;
+    line-height: 1.3 !important;
+    font-size: var(--font-size-base) !important;
+}
+
+/* --- 4.3 DIALOGS --- */
+.p-dialog-mask {
+    background: rgba(15, 23, 42, 0.45) !important;
+    transition: background 0.3s ease, backdrop-filter 0.3s ease !important;
+}
+
+.p-dialog-mask.is-scrolling {
+    background: rgba(15, 23, 42, 0.65) !important;
+    backdrop-filter: blur(2px);
+}
+
+.p-dialog {
+    transition: opacity 0.25s ease, transform 0.25s ease !important;
+    opacity: 1;
+}
+
+.p-dialog.is-scrolling {
+    opacity: 0.92;
+}
+
+/* Paddings de diálogo — una sola vez, vía variables */
+.p-dialog :is(.p-dialog-header, .p-dialog-content, .p-dialog-footer) {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+}
+
+.p-dialog .p-dialog-header { padding-top: 1rem !important; padding-bottom: 0.25rem !important; }
+.p-dialog .p-dialog-content { padding-top: 0.25rem !important; padding-bottom: 0.75rem !important; }
+.p-dialog .p-dialog-footer { padding-top: 0.5rem !important; padding-bottom: 1rem !important; }
+
+.p-dialog .p-dialog-content {
+    overflow-y: scroll !important;
+    scrollbar-gutter: stable both-edges;
+    max-height: none !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    background:
+        linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 12px) top / 100% 12px no-repeat local,
+        linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 12px) bottom / 100% 12px no-repeat local;
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 rgba(226, 232, 240, 0.4);
+}
+
+.p-dialog .p-dialog-content::-webkit-scrollbar { width: 8px; }
+.p-dialog .p-dialog-content::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.4);
+    border-radius: 8px;
+}
+.p-dialog .p-dialog-content::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 8px;
+}
+.p-dialog .p-dialog-content::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* --- 4.4 POPOVER (menú de usuario — anclado arriba a la derecha) --- */
+.p-popover.user-menu-popover {
+    position: fixed !important;
+    inset-inline-end: 12px !important;
+    inset-inline-start: auto !important;
+    top: 56px !important;
+    transform: none !important;
+    max-width: calc(100vw - 24px) !important;
+}
+
+/* --- 4.5 TOOLTIP --- */
+.p-tooltip .p-tooltip-text {
+    font-size: var(--font-size-base) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+    padding: 0.4rem 0.7rem !important;
+    border-radius: 0.4rem !important;
+    background: #d97706 !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 16px rgba(217, 119, 6, 0.45) !important;
+    border: 1px solid #fbbf24 !important;
+}
+
+.p-tooltip .p-tooltip-arrow {
+    border-color: #d97706 !important;
+}
+
+/* ============================================================
+   5. COMPONENTES DE LA APP
+   ============================================================ */
+
+/* --- 5.1 BASE TABLE --- */
+.base-table {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.base-table > .p-datatable {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.base-table > .p-datatable > .p-datatable-header { flex: 0 0 auto; }
+
+.base-table > .p-datatable > .p-datatable-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto !important;
+}
+
+/* Cabecera */
+.base-table .p-datatable .p-datatable-thead > tr > th {
+    background-color: #172554 !important;
+    color: white !important;
+    font-size: 10px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-weight: 700 !important;
+    padding: 0.5rem 0.75rem !important;
+    border-color: #172554 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 2 !important;
+    box-shadow: inset -1px 0 0 0 #ffffff !important;
+}
+
+.base-table .p-datatable .p-datatable-thead > tr > th:last-child {
+    box-shadow: none !important;
+}
+
+.base-table .p-datatable .p-datatable-thead > tr:first-child > th:first-child {
+    border-top-left-radius: var(--radius-std) !important;
+}
+
+.base-table .p-datatable .p-datatable-thead > tr:first-child > th:last-child {
+    border-top-right-radius: var(--radius-std) !important;
+}
+
+/* Centrado cabecera */
+.base-table .p-datatable .p-datatable-thead > tr > th
+    :is(.p-datatable-column-header-content, .p-column-header-content) {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    text-align: center !important;
+    gap: 0.25rem !important;
+}
+
+.base-table .p-datatable .p-datatable-thead > tr > th .p-column-title {
+    display: inline-block !important;
+    text-align: center !important;
+    width: auto !important;
+    flex: 0 1 auto !important;
+}
+
+.base-table .p-datatable .p-datatable-thead > tr > th > :is(span, div) {
+    text-align: center !important;
+    justify-content: center !important;
+}
+
+.base-table .p-datatable .p-datatable-thead > tr > th
+    :is(.p-sortable-column-icon, .p-sort-icon) {
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CELDAS DEL CUERPO: reducir altura de fila
+   ═══════════════════════════════════════════════════════════ */
+.base-table .p-datatable .p-datatable-tbody > tr > td {
+    padding: 0.35rem 0.75rem !important;
+    line-height: 1.25 !important;
+    vertical-align: middle !important;
+}
+
+/* Expander (chevron) y acciones aún más compactos */
+.base-table .p-datatable .p-datatable-tbody > tr > td:first-child,
+.base-table .p-datatable .p-datatable-tbody > tr > td:last-child {
+    padding-top: 0.2rem !important;
+    padding-bottom: 0.2rem !important;
+}
+
+/* --- Paginador --- */
+.base-table .p-paginator {
+    background-color: var(--paginator-bg) !important;
+    border-top: 1px solid var(--paginator-border) !important;
+    padding: 0.5rem 1rem !important;
+    gap: 0.2rem !important;
+    font-size: var(--font-size-base) !important;
+}
+
+/* Botones de navegación y números comparten base */
+.base-table .p-paginator
+    :is(
+        .p-paginator-first,
+        .p-paginator-prev,
+        .p-paginator-next,
+        .p-paginator-last,
+        .p-paginator-pages .p-paginator-page
+    ) {
+    min-width: var(--paginator-btn-size) !important;
+    width: var(--paginator-btn-size) !important;
+    height: var(--paginator-btn-size) !important;
+    border-radius: var(--paginator-btn-radius) !important;
+    color: var(--paginator-btn-color) !important;
+    background-color: var(--paginator-btn-bg) !important;
+    border: 1px solid var(--paginator-btn-border) !important;
+    font-weight: 400 !important;
+    font-size: var(--paginator-btn-font) !important;
+    transition: all 0.15s ease !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Hover navegación */
+.base-table .p-paginator
+    :is(.p-paginator-first, .p-paginator-prev, .p-paginator-next, .p-paginator-last):hover:not(.p-disabled) {
+    background-color: var(--primary-dark) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-dark) !important;
+}
+
+/* Hover números */
+.base-table .p-paginator .p-paginator-pages .p-paginator-page:hover {
+    background-color: var(--paginator-btn-bg-hover) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+/* Iconos */
+.base-table .p-paginator
+    :is(.p-paginator-first, .p-paginator-prev, .p-paginator-next, .p-paginator-last)
+    :is(.p-icon, svg) {
+    width: 0.9rem !important;
+    height: 0.9rem !important;
+    color: inherit !important;
+    fill: currentColor !important;
+}
+
+/* Deshabilitados */
+.base-table .p-paginator
+    :is(.p-paginator-first, .p-paginator-prev, .p-paginator-next, .p-paginator-last).p-disabled {
+    opacity: 1 !important;
+    cursor: not-allowed !important;
+    background-color: #e2e8f0 !important;
+    color: #64748b !important;
+    border-color: var(--border-color-soft) !important;
+}
+
+.base-table .p-paginator
+    :is(.p-paginator-first, .p-paginator-prev, .p-paginator-next, .p-paginator-last).p-disabled svg {
+    fill: #64748b !important;
+}
+
+/* Página activa */
+.base-table .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+    background-color: var(--primary-dark) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-dark) !important;
+    font-weight: 400 !important;
+    box-shadow: 0 2px 6px rgba(17, 63, 103, 0.3) !important;
+}
+
+/* Texto de "current" */
+.base-table .p-paginator .p-paginator-current {
+    color: var(--primary-dark) !important;
+    font-weight: 400 !important;
+    font-size: 0.7rem !important;
+    background-color: #ffffff !important;
+    padding: 0.3rem 0.6rem !important;
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid #93c5fd !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CELDAS: stack vertical (para celdas con múltiples líneas)
+   ═══════════════════════════════════════════════════════════ */
+.cell-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1px;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.cell-stack .cell-primary {
+    display: block;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.cell-stack .cell-secondary {
+    display: block;
+    font-weight: 400;
+    color: #2563eb;     /* color: var(--text-muted); */
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+/* Variantes simples */
+.cell-code {
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+
+.cell-primary-normal {
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EXPANSION: LOGO + 2 COLUMNAS (label arriba, valor abajo)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Panel contenedor de la expansión */
+.expansion-panel {
+    padding: 0;
+    background: transparent;
+    border-radius: var(--radius-std);
+    border: none !important;
+    overflow: hidden;
+}
+
+/* Contenedor: logo + contenido (grid de 2 columnas) */
+.expansion-with-photo {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+/* Columna del logo */
+.expansion-photo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 0.25rem;
+}
+
+.expansion-photo img {
+    width: 100%;
+    max-width: 140px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    border-radius: var(--radius-std);
+    border: 2px solid #2563eb;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    background: #f1f5f9;
+}
+
+/* Grid de 2 columnas para los campos */
+.expansion-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 1.5rem;
+    align-items: start;
+    min-width: 0;
+    padding: 0.5rem 1rem;
+}
+
+/* Cada celda: label arriba, valor abajo */
+.expansion-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: var(--font-size-base);
+    line-height: 1.35;
+    min-width: 0;
+    padding: 0.15rem 0;
+}
+
+/* Label: sin fondo, terminado en ":", alineado izquierda */
+.expansion-item .expansion-label {
+    font-weight: 700;
+    color: #1e40af;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    background: transparent;
+    border: none;
+    padding: 0;
+    text-align: left;
+    display: block;
+    margin: 0;
+}
+
+/* Valor: alineado izquierda, con word-wrap para cadenas largas */
+.expansion-item .expansion-value {
+    color: var(--text-main);
+    font-weight: 500;
+    font-size: var(--font-size-base);
+    padding: 0;
+    background: transparent;
+    display: block;
+    margin: 0;
+    text-align: left;
+
+    /* 🎯 Reglas para cadenas largas */
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* Responsive: en móvil, 1 columna y logo arriba */
+@media (max-width: 640px) {
+    .expansion-with-photo {
+        grid-template-columns: 1fr;
+    }
+    .expansion-photo {
+        justify-content: flex-start;
+    }
+    .expansion-photo img {
+        max-width: 100px;
+    }
+    .expansion-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* La celda que contiene el panel de expansión */
+.base-table .p-datatable .p-datatable-tbody > tr.p-row-expanded > td {
+    border-bottom: none !important;
+    background-color: #f1f5f9 !important;
+}
+
+/* El td de expansión que PrimeVue inserta debajo de la fila */
+.base-table .p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion > td {
+    border-bottom: 1px solid #94a3b8 !important;
+    border-top: none !important;
+    background-color: #f1f5f9 !important;
+    padding: 0.5rem 1rem !important;
+}
+
+/* Blindaje: la fila expandida NO reacciona al hover */
+.base-table .p-datatable .p-datatable-tbody > tr.p-row-expanded,
+.base-table .p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion {
+    pointer-events: none !important;
+}
+
+.base-table .p-datatable .p-datatable-tbody > tr.p-row-expanded > td,
+.base-table .p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion > td,
+.base-table .p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion .expansion-panel,
+.base-table .p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion .expansion-panel * {
+    pointer-events: auto !important;
+}
+
+.base-table .p-datatable .p-datatable-tbody > tr.p-row-expanded > td,
+.base-table .p-datatable .p-datatable-tbody > tr.p-row-expanded:hover > td,
+.base-table .p-datatable .p-datatable-tbody > tr.p-row-expanded:focus-within > td {
+    background-color: #f1f5f9 !important;
+    transition: none !important;
+}
+
+.base-table .p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion > td,
+.base-table .p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion:hover > td,
+.base-table .p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion:focus-within > td {
+    background-color: #f1f5f9 !important;
+    transition: none !important;
+}
+
+.base-table .p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion:hover .expansion-panel,
+.base-table .p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion:hover .expansion-grid,
+.base-table .p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion:hover .expansion-item {
+    background-color: transparent !important;
+    transition: none !important;
+}
+
+/* --- Toggler (chevron) y separadores de filas --- */
+.base-table .p-datatable .p-datatable-tbody > tr > td .p-row-toggler {
+    color: #3b82f6;
+    transition: transform 0.2s;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.base-table .p-datatable .p-datatable-tbody > tr > td:first-child {
+    text-align: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.base-table .p-datatable .p-datatable-tbody > tr.p-row-expanded > td .p-row-toggler {
+    transform: rotate(90deg);
+}
+
+/* Línea horizontal delgada SOLO entre registros normales */
+.base-table .p-datatable .p-datatable-tbody > tr:not(.p-row-expanded):not(.p-datatable-row-expansion) > td {
+    border-bottom: 1px solid #64748b !important;
+}
+
+/* La última fila NO lleva línea */
+.base-table .p-datatable .p-datatable-tbody > tr:last-child > td {
+    border-bottom: none !important;
+}
+
+/* Hover: solo filas normales (cerradas) */
+.base-table .p-datatable .p-datatable-tbody > tr:not(.p-row-expanded):not(.p-datatable-row-expansion):hover > td {
+    background-color: #bfdbfe !important;  /* blue-200 - azul claro */
+    transition: background-color 0.15s ease;
+}
+
+/* --- 5.2 PANELES --- */
+.panel-contrast {
+    @apply bg-white p-5 rounded-2xl shadow-sm;
+    border: 1px solid #3b82f6;
+}
+
+.info-panel {
+    @apply rounded-xl p-4 border;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-color: #e2e8f0;
+}
+
+.info-panel-title {
+    @apply block text-[10px] font-black uppercase tracking-wider mb-2.5;
+    color: #475569;
+}
+
+.info-panel-list {
+    @apply space-y-2 text-[11px] text-slate-600;
+    min-height: 5.5rem;
+}
+
+.info-panel-item { @apply flex items-center gap-2 leading-tight; }
+.info-panel-item i { @apply text-emerald-500 text-xs flex-shrink-0; }
+.info-panel-item b { @apply text-slate-800 font-bold; }
+
+.info-panel-item-file {
+    padding-top: 0.35rem !important;
+    border-top: 1px dashed var(--border-color-soft) !important;
+    margin-top: 0.15rem !important;
+}
+
+.info-panel-item-file i { color: #3b82f6 !important; }
+
+.info-panel-item-file b {
+    color: var(--text-main) !important;
+    font-weight: 700 !important;
+    max-width: 140px !important;
+    display: inline-block !important;
+    vertical-align: bottom !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+/* --- 5.3 DROPZONE --- */
+.dropzone {
+    @apply w-full h-48 rounded-2xl border-2 border-dashed flex items-center justify-center overflow-hidden transition-all duration-200;
+    border-color: var(--border-color-soft);
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.dropzone:hover {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+}
+
+.dropzone-empty { @apply flex flex-col items-center gap-3 text-slate-400; }
+.dropzone-empty i { @apply text-5xl; color: var(--border-color); }
+
+.dropzone-hint {
+    @apply text-[11px] font-bold uppercase tracking-wider;
+    color: var(--text-muted);
+}
+
+.dropzone-subhint { @apply text-[10px]; color: var(--border-color); }
+
+/* --- 5.4 DROPZONE VEHÍCULO --- */
+.dropzone-vehiculo {
+    width: 100%;
+    height: 7rem;
+    border: 2px dashed var(--border-color-soft);
+    border-radius: 12px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+
+.dropzone-vehiculo:hover {
+    border-color: var(--primary-color);
+    background: #f0f9ff;
+}
+
+.dropzone-vehiculo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+}
+
+.dropzone-vehiculo-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.dropzone-vehiculo-empty i { font-size: 1.5rem; color: #cbd5e1; }
+
+/* ============================================================
+   6. VARIANTES / CONTEXTOS
+   ============================================================ */
+
+/* --- 6.1 CRUD DELETE DIALOG (amarillo) --- */
+.crud-delete-dialog,
+.crud-delete-dialog :is(.p-dialog-header, .p-dialog-content, .p-dialog-footer) {
+    background-color: #fef3c7 !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.crud-delete-dialog {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.crud-delete-dialog :is(.p-dialog-header, .p-dialog-footer, .p-dialog-content) {
+    padding: 0 !important;
+}
+
+.crud-delete-dialog .p-dialog-header { display: none !important; }
+.crud-delete-dialog .p-dialog-footer { border-top: none !important; }
+.crud-delete-dialog .p-dialog-content { overflow: visible !important; }
+
+/* --- 6.2 CRUD CELESTE DIALOG --- */
+.crud-celeste-dialog {
+    background-color: #e0f2fe !important;
+    border: 1px solid #60a5fa !important;
+    font-size: 10.5px !important;
+
+    /* Sobrescribe variables: sin reglas duplicadas */
+    --dialog-header-padding: 0.75rem 1rem;
+    --dialog-content-padding: 0.5rem 0.75rem 0.75rem 0.75rem;
+    --dialog-footer-padding: 0.5rem 1rem 0.75rem 1rem;
+}
+
+.crud-celeste-dialog :is(.p-dialog-header, .p-dialog-content, .p-dialog-footer) {
+    background-color: #e0f2fe !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.crud-celeste-dialog .p-dialog-header { padding: var(--dialog-header-padding) !important; }
+.crud-celeste-dialog .p-dialog-content { padding: var(--dialog-content-padding) !important; }
+.crud-celeste-dialog .p-dialog-footer { padding: var(--dialog-footer-padding) !important; }
+
+/* Paneles internos */
+.crud-celeste-dialog .panel-contrast {
+    background-color: #e0f2fe;
+    background-image: none;
+    border: 1.5px solid #3b82f6;
+    box-shadow: none;
+    padding: 0.75rem;
+    border-radius: var(--radius-lg);
+}
+
+/* Espaciados */
+.crud-celeste-dialog .grid { gap: 0.5rem !important; }
+
+.crud-celeste-dialog .panel-contrast > :is(.flex, span):first-child {
+    margin-bottom: 0.5rem !important;
+}
+
+.crud-celeste-dialog .panel-contrast .grid { gap: 0.4rem 0.6rem !important; }
+
+.crud-celeste-dialog .panel-contrast label {
+    margin-bottom: 0.15rem !important;
+    font-size: 10px !important;
+}
+
+/* Tipografía */
+.crud-celeste-dialog label,
+.crud-celeste-dialog .block.text-\[11px\] { font-size: 10px !important; }
+
+.crud-celeste-dialog
+    :is(.p-inputtext, .p-inputtext.p-inputtext-sm, .p-select, .p-select-label) {
+    font-size: 10.5px !important;
+}
+
+.crud-celeste-dialog .panel-contrast :is(.text-xs, .font-black.text-xs) {
+    font-size: 10.5px !important;
+}
+
+.crud-celeste-dialog small,
+.crud-celeste-dialog :is(.text-\[10px\], .text-\[10px\].font-bold) {
+    font-size: 9.5px !important;
+}
+
+.crud-celeste-dialog h3.text-sm { font-size: 12px !important; }
+.crud-celeste-dialog p.text-xs { font-size: 10px !important; }
+
+.crud-celeste-dialog :is(.p-inputtext::placeholder, input::placeholder) {
+    font-size: 10.5px !important;
+}
+
+/* Logo / foto */
+.crud-celeste-dialog .dropzone { height: 15rem !important; padding: 0 !important; }
+
+.crud-celeste-dialog .dropzone img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    padding: 0.20rem !important;
+}
+
+/* Nombre del archivo */
+.crud-celeste-dialog .file-filename {
+    font-size: 13px !important;
+    padding: 0.5rem 0.75rem !important;
+}
+
+.crud-celeste-dialog .file-filename i { font-size: 14px !important; }
+.crud-celeste-dialog .file-filename-label { font-size: 12px !important; }
+
+.crud-celeste-dialog .file-filename-value {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+}
+
+/* --- 6.3 TAG "PRINCIPAL" (ámbar, pastilla, reutilizable) --- */
+.tag-principal {
+    /* Colores (idénticos a ADMIN de roles/index.vue) */
+    background-color: #fbbf24 !important;   /* amber-400 */
+    color: #78350f !important;              /* amber-900 */
+    border: 1px solid #f59e0b !important;   /* amber-500 */
+
+    /* Dimensiones — clave para que NO se centre */
+    width: fit-content !important;          /* ← solo ocupa su contenido */
+    padding: 0.05rem 0.375rem !important;   /* px-1.5 py-0 aprox */
+
+    /* Tipografía */
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+    line-height: 1.3 !important;
+
+    /* Forma */
+    border-radius: 0.25rem !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MÓVIL: alinear tag-principal a la derecha (vista de tarjetas)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .base-table .cell-stack .tag-principal {
+        align-self: flex-end !important;
+    }
+}
+
+/* ============================================================
+   7. RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 640px) {
+    .p-select-panel {
+        min-width: 280px !important;
+        max-width: 95vw !important;
+    }
+
+    .expansion-grid { grid-template-columns: 1fr; }
+
+    .p-dialog {
+        margin: 0.5rem !important;
+        max-height: 98vh !important;
+        width: 95vw !important;
+    }
+
+    :is(.p-dialog, .crud-celeste-dialog) .p-dialog-header {
+        padding: var(--dialog-header-padding-mobile) !important;
+    }
+
+    :is(.p-dialog, .crud-celeste-dialog) .p-dialog-content {
+        max-height: 75vh !important;
+        padding: var(--dialog-content-padding-mobile) !important;
+    }
+
+    :is(.p-dialog, .crud-celeste-dialog) .p-dialog-footer {
+        padding: var(--dialog-footer-padding-mobile) !important;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .p-popover.user-menu-popover {
+        inset-inline: 8px !important;
+        top: 60px !important;
+        width: auto !important;
+        max-width: none !important;
+        box-sizing: border-box !important;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .p-dialog {
+        width: 92vw !important;
+        max-height: 90vh !important;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .base-table,
+    .base-table.h-full {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: none !important;
+    }
+}
+
+/* ============================================================
+   8. ESTADOS GLOBALES
+   ============================================================ */
+
+/* Inputs unificados (base + focus + contextos) */
+:is(.p-inputtext, .p-select, textarea.p-inputtext, input[type="date"], input[type="time"]) {
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-std) !important;
+    background-clip: padding-box;
+}
+
+:is(.p-inputtext, .p-select):enabled:hover,
+.p-select:not(.p-disabled):hover {
+    border-color: #64748b !important;
+}
+
+/* Error */
+:is(.p-select.p-invalid, .p-inputtext.p-invalid, input[type="date"].p-invalid, input[type="time"].p-invalid) {
+    border-color: var(--danger-color) !important;
+}
+
+.p-select.p-invalid .p-select-label { color: var(--danger-color) !important; }
+
+/* Foco unificado (verde) */
+:is(
+    .p-inputtext:focus,
+    .p-inputtext:focus-visible,
+    .p-inputtext.p-focus,
+    .p-select:focus,
+    .p-select:focus-visible,
+    .p-select.p-focus,
+    .p-select.p-inputwrapper-focus,
+    input[type="date"]:focus,
+    input[type="date"]:focus-visible,
+    input[type="time"]:focus,
+    input[type="time"]:focus-visible,
+    textarea.p-inputtext:focus,
+    textarea.p-inputtext:focus-visible,
+    .base-select .p-select:focus,
+    .base-select .p-select:focus-visible,
+    .base-select .p-select.p-focus
+) {
+    outline: none !important;
+    border-color: var(--focus-color) !important;
+    box-shadow: var(--focus-ring) !important;
+}
+
+/* Inputs en diálogos celestes: fondo blanco + borde base */
+.crud-celeste-dialog
+    :is(.p-inputtext, .p-select, input[type="date"], input[type="time"]) {
+    background-color: #ffffff !important;
+    border-color: var(--border-color) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BASE SEARCH: foco unificado (verde) igual al select
+   ═══════════════════════════════════════════════════════════ */
+.base-search-input:focus,
+.base-search-input:focus-visible,
+.base-table .base-search-input:focus,
+.base-table .base-search-input:focus-visible,
+.base-table input.base-search-input:focus,
+.base-table input.base-search-input:focus-visible {
+    outline: none !important;
+    outline-width: 0 !important;
+    outline-style: none !important;
+    outline-color: transparent !important;
+    border-color: var(--focus-color) !important;
+    box-shadow: var(--focus-ring) !important;
+}
+
+/* ============================================================
+   9. FIX: focus ring del wrapper scrollable
+   ============================================================ */
+.base-table
+    :is(
+        .p-datatable-wrapper,
+        .p-datatable-table-container,
+        .p-datatable-scrollable-body,
+        .p-datatable > .p-datatable-table-container
+    ),
+.base-table .p-datatable:focus,
+.base-table .p-datatable:focus-visible,
+.base-table [tabindex="0"]:focus,
+.base-table [tabindex="0"]:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.base-table .p-paginator,
+.base-table .p-paginator *:focus,
+.base-table .p-paginator *:focus-visible {
+    outline: none !important;
+}
+
+.base-table .p-paginator button:focus-visible {
+    outline: 2px solid var(--focus-color) !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+}
+
+.base-table :is(input, select, textarea):not(.base-search-input):focus-visible {
+    outline: 2px solid var(--focus-color) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLA: fondo gris claro en las filas (tbody)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Fondo gris de todas las filas */
+.base-table .p-datatable .p-datatable-tbody > tr > td {
+    background-color: #f1f5f9 !important;  /* slate-100 */
+}
+
+/* Fila expandida: mismo gris que las filas normales */
+.base-table .p-datatable .p-datatable-tbody > tr.p-row-expanded > td,
+.base-table .p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion > td {
+    background-color: #f1f5f9 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DROPZONE AVATAR — EXCLUSIVO PARA USUARIOS
+   ═══════════════════════════════════════════════════════════ */
+
+.crud-celeste-dialog .dropzone.dropzone-avatar {
+    width: 8rem !important;      /* ← 128px */
+    height: 8rem !important;     /* ← 128px (no más 240px) */
+    min-height: 8rem !important; /* ← anula el min-height implícito de .dropzone */
+    max-height: 8rem !important; /* ← anula cualquier max-height */
+    padding: 0 !important;
+    margin: 0 auto !important;
+    border-radius: var(--radius-lg) !important;
+}
+
+.crud-celeste-dialog .dropzone.dropzone-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    padding: 0 !important;
+    border-radius: calc(var(--radius-lg) - 2px) !important;
+    display: block !important;
+}
+
+.crud-celeste-dialog .dropzone.dropzone-avatar .dropzone-empty {
+    gap: 0.35rem !important;  /* ← reduce espacio entre icono y texto */
+}
+
+.crud-celeste-dialog .dropzone.dropzone-avatar .dropzone-empty i {
+    font-size: 1.75rem !important;  /* ← icono más pequeño */
+}
+
+.crud-celeste-dialog .dropzone.dropzone-avatar .dropzone-hint {
+    font-size: 9px !important;
+}

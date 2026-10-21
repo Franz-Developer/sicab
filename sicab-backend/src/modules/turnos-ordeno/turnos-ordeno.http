@@ -1,0 +1,63 @@
+# C:\sistemas\sicab\sicab-backend\src\modules\turnos-ordeno\turnos-ordeno.http
+# ----------------------------------------------------------------------
+# DEFINICIÓN DE VARIABLES
+# ----------------------------------------------------------------------
+@baseUrl = http://localhost:3010/api
+@baseUrl_turnos = {{baseUrl}}/turnos-ordeno
+@rest-client.previewOption = body
+
+### 1. OBTENER TOKEN DE AUTENTICACIÓN.
+# @name login
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "ADMIN",
+    "password": "12345678"
+}
+
+### 2. GUARDAR TOKEN EN VARIABLE.
+@authToken = {{login.response.body.token}}
+
+### LISTAR TURNOS ACTIVOS
+GET {{baseUrl_turnos}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### OBTENER UN TURNO
+GET {{baseUrl_turnos}}/2
+Authorization: Bearer {{authToken}}
+
+### CREAR TURNO
+POST {{baseUrl_turnos}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "turno": "NOCHE",
+    "codigo": "NOC",
+    "hora_inicio": "22:00:00",
+    "hora_fin": "06:00:00",
+    "descripcion": "TURNO DE ORDEÑO NOCTURNO"
+}
+
+### ACTUALIZAR TURNO
+PATCH {{baseUrl_turnos}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "hora_fin": "06:30:00",
+    "descripcion": "TURNO NOCTURNO EXTENDIDO 30 MIN"
+}
+
+### ELIMINAR TURNO (Borrado lógico)
+DELETE {{baseUrl_turnos}}/2
+Authorization: Bearer {{authToken}}
+
+### ARCHIVAR TURNO
+PATCH {{baseUrl_turnos}}/2/archivar
+Authorization: Bearer {{authToken}}
+
+### DESARCHIVAR TURNO
+PATCH {{baseUrl_turnos}}/2/desarchivar
+Authorization: Bearer {{authToken}}

@@ -1,0 +1,414 @@
+# C:\sicab\sicab-backend\src\modules\cargos\cargos.http
+# ----------------------------------------------------------------------
+# DEFINICIÓN DE VARIABLES
+# ----------------------------------------------------------------------
+@baseUrl = http://localhost:3010/api
+@baseUrl_cargos = {{baseUrl}}/cargos
+@baseUrl_constantes = {{baseUrl}}/constantes
+@rest-client.previewOption = body
+
+### 1. OBTENER TOKEN DE AUTENTICACIÓN (ADMIN).
+# Se debe presionar primero.
+# @name login
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "ADMIN",
+    "password": "12345678"
+}
+
+### 2. GUARDAR TOKEN EN VARIABLE.
+# No se debe presionar, es automático.
+@authToken = {{login.response.body.token}}
+
+# ==============================================================================
+# AUTENTICACIÓN - USUARIO PRUEBA
+# ==============================================================================
+
+### 1.b OBTENER TOKEN USUARIO PRUEBA
+# @name loginUserPrueba
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "PRUEBA",
+    "password": "12345678"
+}
+
+### 2.b GUARDAR TOKEN USUARIO PRUEBA
+# @authToken = {{loginUserPrueba.response.body.token}}
+
+# ==============================================================================
+# ENDPOINTS DE APOYO
+# ==============================================================================
+
+### LISTAR TIPOS DE MONEDA
+GET {{baseUrl_constantes}}?tipo=tipo_moneda_id
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# LISTAR CARGOS (GET)
+# ==============================================================================
+
+### LISTAR TODOS (Activos + Históricos por defecto)
+GET {{baseUrl_cargos}}
+Authorization: Bearer {{authToken}}
+
+### LISTAR SOLO ACTIVOS (1000)
+GET {{baseUrl_cargos}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### LISTAR SOLO HISTÓRICOS (1002)
+GET {{baseUrl_cargos}}?estado_id=1002
+Authorization: Bearer {{authToken}}
+
+### LISTAR SOLO BORRADOS (1001)
+GET {{baseUrl_cargos}}?estado_id=1001
+Authorization: Bearer {{authToken}}
+
+### LISTAR ACTIVOS FILTRADOS POR USUARIO REGISTRADOR
+GET {{baseUrl_cargos}}?estado_id=1000&usuario_id=2
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# FILTROS ESPECÍFICOS
+# ==============================================================================
+
+### FILTRAR POR CÓDIGO EXACTO (case-insensitive)
+GET {{baseUrl_cargos}}?codigo=CON&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR TIPO DE MONEDA (2300 = BOLIVIANO)
+GET {{baseUrl_cargos}}?tipo_moneda_id=2300&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR TIPO DE MONEDA (2301 = DÓLAR)
+GET {{baseUrl_cargos}}?tipo_moneda_id=2301&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR CÓDIGO Y MONEDA
+GET {{baseUrl_cargos}}?codigo=GER&tipo_moneda_id=2300&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# BÚSQUEDA POR TEXTO (q)
+# ==============================================================================
+
+### BÚSQUEDA FLEXIBLE (contiene la palabra)
+GET {{baseUrl_cargos}}?q=GERENTE
+Authorization: Bearer {{authToken}}
+
+### BÚSQUEDA POR CÓDIGO
+GET {{baseUrl_cargos}}?q=GER
+Authorization: Bearer {{authToken}}
+
+### BÚSQUEDA POR DESCRIPCIÓN
+GET {{baseUrl_cargos}}?q=ADMINISTRATIVO
+Authorization: Bearer {{authToken}}
+
+### BÚSQUEDA EXACTA (palabra completa)
+GET {{baseUrl_cargos}}?q=GERENTE&exactMatch=1
+Authorization: Bearer {{authToken}}
+
+### BÚSQUEDA FLEXIBLE (por defecto)
+GET {{baseUrl_cargos}}?q=GERENTE&exactMatch=0
+Authorization: Bearer {{authToken}}
+
+### BÚSQUEDA MULTI-PALABRA (cada palabra es un filtro)
+GET {{baseUrl_cargos}}?q=GERENTE GENERAL
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# PAGINACIÓN
+# ==============================================================================
+
+### PÁGINA 1: Registros 0 al 15
+GET {{baseUrl_cargos}}?offset=0&limit=16
+Authorization: Bearer {{authToken}}
+
+### PÁGINA 2: Registros 16 al 31
+GET {{baseUrl_cargos}}?offset=16&limit=16
+Authorization: Bearer {{authToken}}
+
+### PAGINACIÓN CON FILTRO DE ESTADO
+GET {{baseUrl_cargos}}?estado_id=1000&offset=0&limit=5
+Authorization: Bearer {{authToken}}
+
+### PAGINACIÓN CON BÚSQUEDA
+GET {{baseUrl_cargos}}?estado_id=1000&offset=0&limit=2&q=GERENTE
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# ORDENAMIENTO
+# ==============================================================================
+
+### ORDENAR POR CARGO (Ascendente)
+GET {{baseUrl_cargos}}?sortField=cargo&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR CARGO (Descendente)
+GET {{baseUrl_cargos}}?sortField=cargo&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR ID (Descendente)
+GET {{baseUrl_cargos}}?sortField=cargo_id&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR ID (Ascendente)
+GET {{baseUrl_cargos}}?sortField=cargo_id&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR FECHA DE REGISTRO (Más recientes primero)
+GET {{baseUrl_cargos}}?sortField=fecha_registro&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR CÓDIGO (Ascendente)
+GET {{baseUrl_cargos}}?sortField=codigo&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR SUELDO BASE (Mayor a menor)
+GET {{baseUrl_cargos}}?sortField=sueldo_base&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR TIPO DE MONEDA
+GET {{baseUrl_cargos}}?sortField=tipo_moneda_id&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR + FILTRO + PAGINACIÓN
+GET {{baseUrl_cargos}}?estado_id=1000&sortField=cargo&sortOrder=1&offset=0&limit=5
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# COMBINACIÓN DE FILTROS
+# ==============================================================================
+
+### ACTIVOS, MONEDA Bs., ORDENADOS POR CARGO
+GET {{baseUrl_cargos}}?estado_id=1000&tipo_moneda_id=2300&sortField=cargo&sortOrder=1&offset=0&limit=100
+Authorization: Bearer {{authToken}}
+
+### HISTÓRICOS, ORDENADOS POR FECHA DE REGISTRO DESC
+GET {{baseUrl_cargos}}?estado_id=1002&sortField=fecha_registro&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# OBTENER POR ID
+# ==============================================================================
+
+### OBTENER CARGO POR ID
+GET {{baseUrl_cargos}}/2
+Authorization: Bearer {{authToken}}
+
+### OBTENER CARGO POR ID (comodín)
+GET {{baseUrl_cargos}}/1
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CREAR CARGO
+# ==============================================================================
+
+### CREAR CARGO BÁSICO (Boliviano por defecto)
+POST {{baseUrl_cargos}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "cargo": "GERENTE DE OPERACIONES",
+    "codigo": "GER_OPE",
+    "sueldo_base": 9500.00,
+    "tipo_moneda_id": 2300,
+    "descripcion": "Responsable de la operación diaria de la central"
+}
+
+### CREAR CARGO EN DÓLARES
+POST {{baseUrl_cargos}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "cargo": "ASESOR INTERNACIONAL",
+    "codigo": "ASE_INT",
+    "sueldo_base": 1500.00,
+    "tipo_moneda_id": 2301,
+    "descripcion": "Asesoría técnica con sueldo en dólares"
+}
+
+### CREAR CARGO SIN SUELDO (hereda 0.00)
+POST {{baseUrl_cargos}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "cargo": "PASANTE",
+    "codigo": "PAS",
+    "sueldo_base": 0.00,
+    "tipo_moneda_id": 2300,
+    "descripcion": "Pasantía sin remuneración"
+}
+
+### CREAR CARGO SIN DESCRIPCIÓN (opcional)
+POST {{baseUrl_cargos}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "cargo": "AUXILIAR DE LIMPIEZA",
+    "codigo": "AUX_LIM",
+    "sueldo_base": 2200.00,
+    "tipo_moneda_id": 2300
+}
+
+### ❌ ERROR ESPERADO 409: Duplicar (cargo + tipo_moneda_id)
+POST {{baseUrl_cargos}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "cargo": "GERENTE GENERAL",
+    "codigo": "GER_NEW",
+    "sueldo_base": 12000.00,
+    "tipo_moneda_id": 2300
+}
+
+### ❌ ERROR ESPERADO 409: Duplicar (codigo + tipo_moneda_id)
+POST {{baseUrl_cargos}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "cargo": "GERENTE NUEVO",
+    "codigo": "GER",
+    "sueldo_base": 12000.00,
+    "tipo_moneda_id": 2300
+}
+
+### ✅ PERMITIDO: Mismo cargo con distinta moneda
+POST {{baseUrl_cargos}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "cargo": "GERENTE GENERAL",
+    "codigo": "GER_USD",
+    "sueldo_base": 1700.00,
+    "tipo_moneda_id": 2301,
+    "descripcion": "Mismo cargo pero con sueldo en dólares"
+}
+
+# ==============================================================================
+# ACTUALIZAR CARGO
+# ==============================================================================
+
+### ACTUALIZAR SOLO DESCRIPCIÓN
+PATCH {{baseUrl_cargos}}/15
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "descripcion": "Descripción actualizada del cargo"
+}
+
+### ACTUALIZAR SUELDO Y MONEDA
+PATCH {{baseUrl_cargos}}/15
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "sueldo_base": 10000.00,
+    "tipo_moneda_id": 2301
+}
+
+### ACTUALIZAR CARGO Y CÓDIGO
+PATCH {{baseUrl_cargos}}/15
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "cargo": "GERENTE GENERAL ADJUNTO",
+    "codigo": "GER_ADJ"
+}
+
+### ❌ ERROR ESPERADO 409: Cambiar tipo_moneda_id a uno ya existente con el mismo cargo
+PATCH {{baseUrl_cargos}}/15
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "tipo_moneda_id": 2300
+}
+
+### ❌ ERROR ESPERADO 403: Modificar campos protegidos con dependencias activas
+# El cargo tiene trabajadores_cargos asociados en estado ACTIVO/HISTÓRICO.
+PATCH {{baseUrl_cargos}}/4
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "cargo": "OPERADOR DE RADIO CAMBIADO",
+    "sueldo_base": 3000.00,
+    "tipo_moneda_id": 2301
+}
+
+# ==============================================================================
+# ELIMINAR CARGO (Borrado lógico: ACTIVO → BORRADO)
+# ==============================================================================
+
+### ELIMINAR CARGO SIN DEPENDENCIAS
+DELETE {{baseUrl_cargos}}/9
+Authorization: Bearer {{authToken}}
+
+### ❌ ERROR ESPERADO 400: Eliminar cargo con dependencias activas
+DELETE {{baseUrl_cargos}}/4
+Authorization: Bearer {{authToken}}
+
+### ❌ ERROR ESPERADO 403: Eliminar registro comodín
+DELETE {{baseUrl_cargos}}/1
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# ARCHIVAR / DESARCHIVAR
+# ==============================================================================
+
+### ARCHIVAR CARGO (ACTIVO → HISTÓRICO 1002)
+PATCH {{baseUrl_cargos}}/11/archivar
+Authorization: Bearer {{authToken}}
+
+### DESARCHIVAR CARGO (HISTÓRICO 1002 → ACTIVO 1000)
+PATCH {{baseUrl_cargos}}/11/desarchivar
+Authorization: Bearer {{authToken}}
+
+### ❌ ERROR ESPERADO 403: Archivar el comodín
+PATCH {{baseUrl_cargos}}/1/archivar
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CASOS DE USO COMBINADOS
+# ==============================================================================
+
+### ACTIVOS QUE CONTENGAN "GERENTE", ORDENADOS POR NOMBRE
+GET {{baseUrl_cargos}}?estado_id=1000&q=GERENTE&sortField=cargo&sortOrder=1&offset=0&limit=10
+Authorization: Bearer {{authToken}}
+
+### ACTIVOS POR CÓDIGO "GER", ORDENADOS POR ID
+GET {{baseUrl_cargos}}?estado_id=1000&q=GER&sortField=cargo_id&sortOrder=1&offset=0&limit=5
+Authorization: Bearer {{authToken}}
+
+### ACTIVOS CON DESCRIPCIÓN QUE CONTENGA "ADMIN", ORDENADOS POR CARGO
+GET {{baseUrl_cargos}}?estado_id=1000&q=ADMIN&sortField=cargo&sortOrder=1&offset=0&limit=10
+Authorization: Bearer {{authToken}}
+
+### ACTIVOS ORDENADOS POR CÓDIGO (para combos)
+GET {{baseUrl_cargos}}?estado_id=1000&sortField=codigo&sortOrder=1&limit=100
+Authorization: Bearer {{authToken}}
+
+### ACTIVOS ORDENADOS POR NOMBRE (para combos)
+GET {{baseUrl_cargos}}?estado_id=1000&sortField=cargo&sortOrder=1&limit=100
+Authorization: Bearer {{authToken}}
+
+### BÚSQUEDA FLEXIBLE POR CÓDIGO
+GET {{baseUrl_cargos}}?q=JV&exactMatch=0
+Authorization: Bearer {{authToken}}
+
+### BÚSQUEDA EXACTA POR CÓDIGO
+GET {{baseUrl_cargos}}?q=JV&exactMatch=1
+Authorization: Bearer {{authToken}}

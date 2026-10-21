@@ -1,0 +1,77 @@
+# C:\sistemas\sicab\sicab-backend\src\modules\tipos-semovientes\tipos-semovientes.http
+# ----------------------------------------------------------------------
+# DEFINICIÓN DE VARIABLES
+# ----------------------------------------------------------------------
+@baseUrl = http://localhost:3010/api
+@baseUrl_tipos_semovientes = {{baseUrl}}/tipos-semovientes
+@rest-client.previewOption = body
+
+### 1. OBTENER TOKEN DE AUTENTICACIÓN.
+# @name login
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "ADMIN",
+    "password": "12345678"
+}
+
+### 2. GUARDAR TOKEN EN VARIABLE.
+@authToken = {{login.response.body.token}}
+
+### LISTAR TIPOS DE SEMOVIENTES (Por defecto activos)
+GET {{baseUrl_tipos_semovientes}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### LISTAR TIPOS DE SEMOVIENTES INCLUYENDO HISTÓRICOS
+GET {{baseUrl_tipos_semovientes}}?estado_id=1002
+Authorization: Bearer {{authToken}}
+
+### BUSCAR TIPOS DE SEMOVIENTES POR NOMBRE (q flexible)
+GET {{baseUrl_tipos_semovientes}}?q=vacuno
+Authorization: Bearer {{authToken}}
+
+### BUSCAR TIPOS DE SEMOVIENTES POR NOMBRE (q exacta)
+GET {{baseUrl_tipos_semovientes}}?q=VACUNO&exactMatch=1
+Authorization: Bearer {{authToken}}
+
+### LISTAR CON PAGINACIÓN Y ORDEN
+GET {{baseUrl_tipos_semovientes}}?limit=5&offset=0&sortField=semoviente&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+### OBTENER UN TIPO DE SEMOVIENTE
+GET {{baseUrl_tipos_semovientes}}/2
+Authorization: Bearer {{authToken}}
+
+### CREAR TIPO DE SEMOVIENTE
+POST {{baseUrl_tipos_semovientes}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "semoviente": "BUFALINO",
+    "vida_util_anios": 10,
+    "tasa_amortizacion": 10.00
+}
+
+### ACTUALIZAR TIPO DE SEMOVIENTE
+PATCH {{baseUrl_tipos_semovientes}}/6
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vida_util_anios": 12,
+    "tasa_amortizacion": 8.33
+}
+
+### ARCHIVAR TIPO DE SEMOVIENTE (1000 → 1002)
+PATCH {{baseUrl_tipos_semovientes}}/6/archivar
+Authorization: Bearer {{authToken}}
+
+### DESARCHIVAR TIPO DE SEMOVIENTE (1002 → 1000)
+PATCH {{baseUrl_tipos_semovientes}}/6/desarchivar
+Authorization: Bearer {{authToken}}
+
+### ELIMINAR TIPO DE SEMOVIENTE (Borrado lógico 1000 → 1001)
+DELETE {{baseUrl_tipos_semovientes}}/6
+Authorization: Bearer {{authToken}}

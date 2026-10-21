@@ -1,0 +1,169 @@
+# C:\sirena\sirena-backend\src\modules\tipos-cambios\tipos-cambios.http
+# ----------------------------------------------------------------------
+# DEFINICIÓN DE VARIABLES
+# ----------------------------------------------------------------------
+@baseUrl = http://localhost:3010/api
+@baseUrl_tipos_cambios = {{baseUrl}}/tipos-cambios
+@baseUrl_constantes = {{baseUrl}}/constantes
+@rest-client.previewOption = body
+
+### 1. OBTENER TOKEN DE AUTENTICACIÓN (ADMIN)
+# @name login
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "ADMIN",
+    "password": "12345678"
+}
+
+### 2. GUARDAR TOKEN EN VARIABLE (automático)
+@authToken = {{login.response.body.token}}
+
+# ==============================================================================
+# LISTAR Y FILTRAR TIPOS DE CAMBIO
+# ==============================================================================
+
+### LISTAR TODOS (Activos + Históricos)
+GET {{baseUrl_tipos_cambios}}
+Authorization: Bearer {{authToken}}
+
+### LISTAR CON PAGINACIÓN Y ORDEN
+GET {{baseUrl_tipos_cambios}}?limit=10&offset=0&sortField=tipo_cambio_id&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR PAR DE MONEDAS (BOLIVIANO → UFV)
+GET {{baseUrl_tipos_cambios}}?origen_moneda_id=2300&destino_moneda_id=2303
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR RANGO DE FECHAS (Enero 2024)
+GET {{baseUrl_tipos_cambios}}?fecha_desde=2024-01-01&fecha_hasta=2024-01-31
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR ESTADO Y RANGO DE FECHAS
+GET {{baseUrl_tipos_cambios}}?estado_id=1000&fecha_desde=2026-01-01&fecha_hasta=2026-12-31
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# OBTENER POR ID
+# ==============================================================================
+
+### OBTENER TIPO DE CAMBIO POR ID = 1 (comodín)
+GET {{baseUrl_tipos_cambios}}/1
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CRUD TIPOS DE CAMBIO
+# ==============================================================================
+
+### CREAR TIPO DE CAMBIO (Boliviano → Dólar)
+POST {{baseUrl_tipos_cambios}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "origen_moneda_id": 2300,
+    "destino_moneda_id": 2301,
+    "factor_compra": 0.1437,
+    "factor_venta": 0.1447,
+    "fecha_cotizacion": "2026-08-20"
+}
+
+### ERROR 400: MISMA MONEDA EN ORIGEN Y DESTINO
+POST {{baseUrl_tipos_cambios}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "origen_moneda_id": 2300,
+    "destino_moneda_id": 2300,
+    "factor_compra": 1.0000,
+    "factor_venta": 1.0000,
+    "fecha_cotizacion": "2026-08-20"
+}
+
+### ACTUALIZAR AMBOS FACTORES
+PATCH {{baseUrl_tipos_cambios}}/370
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "factor_compra": 1.9200,
+    "factor_venta": 1.9802
+}
+
+### ELIMINAR TIPO DE CAMBIO (Borrado lógico → 1001)
+DELETE {{baseUrl_tipos_cambios}}/190
+Authorization: Bearer {{authToken}}
+
+### LISTAR BORRADOS (1001)
+GET {{baseUrl_tipos_cambios}}?estado_id=1001
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# FILTROS DISPONIBLES
+# ==============================================================================
+
+### 1. FILTRAR POR MONEDA DE ORIGEN (Boliviano = 2300)
+GET {{baseUrl_tipos_cambios}}?origen_moneda_id=2300
+Authorization: Bearer {{authToken}}
+
+### 2. FILTRAR POR MONEDA DE DESTINO (UFV = 2303)
+GET {{baseUrl_tipos_cambios}}?destino_moneda_id=2303
+Authorization: Bearer {{authToken}}
+
+### 3. FILTRAR POR PAR DE MONEDAS (Boliviano → UFV)
+GET {{baseUrl_tipos_cambios}}?origen_moneda_id=2300&destino_moneda_id=2303
+Authorization: Bearer {{authToken}}
+
+### 4. FILTRAR POR ESTADO (Solo ACTIVOS = 1000)
+GET {{baseUrl_tipos_cambios}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### 5. FILTRAR POR ESTADO (Solo HISTÓRICOS = 1002)
+GET {{baseUrl_tipos_cambios}}?estado_id=1002
+Authorization: Bearer {{authToken}}
+
+### 6. FILTRAR POR USUARIO (Registrado por usuario_id = 2)
+GET {{baseUrl_tipos_cambios}}?usuario_id=2
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# FILTROS DE FECHAS (RANGO SOBRE fecha_cotizacion)
+# ==============================================================================
+
+### 7. FILTRAR DESDE UNA FECHA (Mayor o igual a 2024-01-01)
+GET {{baseUrl_tipos_cambios}}?fecha_desde=2024-01-01
+Authorization: Bearer {{authToken}}
+
+### 8. FILTRAR HASTA UNA FECHA (Menor o igual a 2024-12-31)
+GET {{baseUrl_tipos_cambios}}?fecha_hasta=2024-12-31
+Authorization: Bearer {{authToken}}
+
+### 9. FILTRAR POR RANGO DE FECHAS (Año 2024 completo)
+GET {{baseUrl_tipos_cambios}}?fecha_desde=2024-01-01&fecha_hasta=2024-12-31
+Authorization: Bearer {{authToken}}
+
+### 10. FILTRAR POR RANGO DE FECHAS (Enero 2025)
+GET {{baseUrl_tipos_cambios}}?fecha_desde=2025-01-01&fecha_hasta=2025-01-31
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# COMBINACIÓN DE FILTROS
+# ==============================================================================
+
+### 11. RANGO DE FECHAS + MONEDA (UFV → BOB en 2024)
+GET {{baseUrl_tipos_cambios}}?fecha_desde=2024-01-01&fecha_hasta=2024-12-31&origen_moneda_id=2300&destino_moneda_id=2303
+Authorization: Bearer {{authToken}}
+
+### 12. RANGO DE FECHAS + ESTADO (Solo activos en 2026)
+GET {{baseUrl_tipos_cambios}}?fecha_desde=2026-01-01&fecha_hasta=2026-12-31&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### 13. RANGO DE FECHAS + MONEDA + ORDENAMIENTO
+GET {{baseUrl_tipos_cambios}}?fecha_desde=2024-01-01&fecha_hasta=2024-12-31&origen_moneda_id=2300&destino_moneda_id=2303&sortField=fecha_cotizacion&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+### 14. BÚSQUEDA POR USUARIO + ESTADO (Registrados por ADMIN, solo activos)
+GET {{baseUrl_tipos_cambios}}?usuario_id=2&estado_id=1000
+Authorization: Bearer {{authToken}}

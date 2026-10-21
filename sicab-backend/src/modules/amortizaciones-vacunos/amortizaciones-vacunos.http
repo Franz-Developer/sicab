@@ -1,0 +1,259 @@
+# C:\sicab\sicab-backend\src\modules\amortizaciones-vacunos\amortizaciones-vacunos.http
+# ----------------------------------------------------------------------
+# DEFINICIÓN DE VARIABLES
+# ----------------------------------------------------------------------
+@baseUrl = http://localhost:3010/api
+@baseUrl_amortizaciones = {{baseUrl}}/amortizaciones-vacunos
+@baseUrl_vacunos = {{baseUrl}}/vacunos
+@rest-client.previewOption = body
+
+### 1. OBTENER TOKEN DE AUTENTICACIÓN.
+# Se debe presionar primero.
+# @name login
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "ADMIN",
+    "password": "12345678"
+}
+
+### 2. GUARDAR TOKEN EN VARIABLE.
+# No se debe presionar es automático.
+@authToken = {{login.response.body.token}}
+
+# ==============================================================================
+# ENDPOINT EXTRAS
+# ==============================================================================
+
+### LISTAR VACUNOS ACTIVOS AMORTIZABLES
+GET {{baseUrl_vacunos}}?estado_vacuno_id=1&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# LISTAR AMORTIZACIONES (GET)
+# ==============================================================================
+
+### LISTAR TODAS (Activos + Históricos por defecto)
+GET {{baseUrl_amortizaciones}}
+Authorization: Bearer {{authToken}}
+
+### LISTAR POR ESTADO ACTIVOS (1000)
+GET {{baseUrl_amortizaciones}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### LISTAR POR ESTADO BORRADOS (1001)
+GET {{baseUrl_amortizaciones}}?estado_id=1001
+Authorization: Bearer {{authToken}}
+
+### LISTAR POR ESTADO HISTÓRICOS (1002)
+GET {{baseUrl_amortizaciones}}?estado_id=1002
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# FILTROS POR VACUNO, PERIODO, TIPO
+# ==============================================================================
+
+### FILTRAR POR VACUNO_ID (Vacuno 2)
+GET {{baseUrl_amortizaciones}}?vacuno_id=2&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR TIPO_PERIODO_ID (1 = MENSUAL)
+GET {{baseUrl_amortizaciones}}?tipo_periodo_id=1&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR RANGO DE PERIODO
+GET {{baseUrl_amortizaciones}}?periodo_desde=2026-01-01&periodo_hasta=2026-12-31&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR SUCURSAL_ID (Sucursal 2 = VIACHA)
+GET {{baseUrl_amortizaciones}}?sucursal_id=2&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR EMPRESA_ID (Empresa 2 = CHOQUENAIRA)
+GET {{baseUrl_amortizaciones}}?empresa_id=2&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# BÚSQUEDA POR TEXTO (q)
+# ==============================================================================
+
+### BÚSQUEDA FLEXIBLE POR ARETE
+GET {{baseUrl_amortizaciones}}?q=V-001&exactMatch=0
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# PAGINACIÓN
+# ==============================================================================
+
+### PÁGINA 1: Registros 0 al 15
+GET {{baseUrl_amortizaciones}}?offset=0&limit=16
+Authorization: Bearer {{authToken}}
+
+### PAGINACIÓN CON FILTRO DE ESTADO
+GET {{baseUrl_amortizaciones}}?estado_id=1000&offset=0&limit=5
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# ORDENAMIENTO
+# ==============================================================================
+
+### ORDENAR POR PERIODO (Más recientes primero)
+GET {{baseUrl_amortizaciones}}?estado_id=1000&sortField=periodo&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR VALOR_LIBRO (Descendente)
+GET {{baseUrl_amortizaciones}}?estado_id=1000&sortField=valor_libro&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR VACUNO (Ascendente)
+GET {{baseUrl_amortizaciones}}?estado_id=1000&sortField=vacuno_arete&sortOrder=1
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# OBTENER POR ID
+# ==============================================================================
+
+### OBTENER AMORTIZACIÓN POR ID
+GET {{baseUrl_amortizaciones}}/2
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CRUD AMORTIZACIÓN (CÁLCULO AUTOMÁTICO)
+# ==============================================================================
+
+### CREAR/RECALCULAR AMORTIZACIÓN - VACUNO 2, PERIODO 2026-10-01 MENSUAL
+POST {{baseUrl_amortizaciones}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 2,
+    "periodo": "2026-10-01",
+    "tipo_periodo_id": 1,
+    "observaciones": "CÁLCULO MANUAL DEL PERIODO OCTUBRE 2026"
+}
+
+### CREAR/RECALCULAR AMORTIZACIÓN - VACUNO 3, PERIODO 2026-10-01 MENSUAL
+POST {{baseUrl_amortizaciones}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 3,
+    "periodo": "2026-10-01",
+    "tipo_periodo_id": 1
+}
+
+### RECALCULAR (SOBRESCRIBIR) AMORTIZACIÓN EXISTENTE
+POST {{baseUrl_amortizaciones}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 2,
+    "periodo": "2026-10-01",
+    "tipo_periodo_id": 1,
+    "recalcular": true,
+    "observaciones": "RECÁLCULO FORZADO POR AJUSTE DE TASA"
+}
+
+### ACTUALIZAR OBSERVACIONES
+PATCH {{baseUrl_amortizaciones}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "observaciones": "OBSERVACIÓN ACTUALIZADA"
+}
+
+# ==============================================================================
+# ELIMINAR (Borrado lógico)
+# ==============================================================================
+
+### ELIMINAR AMORTIZACIÓN (ACTIVO → BORRADO)
+DELETE {{baseUrl_amortizaciones}}/9
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# ARCHIVAR / DESARCHIVAR
+# ==============================================================================
+
+### ARCHIVAR AMORTIZACIÓN (ACTIVO → HISTÓRICO)
+PATCH {{baseUrl_amortizaciones}}/6/archivar
+Authorization: Bearer {{authToken}}
+
+### DESARCHIVAR AMORTIZACIÓN (HISTÓRICO → ACTIVO)
+PATCH {{baseUrl_amortizaciones}}/6/desarchivar
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CASOS DE ERROR ESPERADOS
+# ==============================================================================
+
+### ❌ ERROR: periodo no es día 1 (MENSUAL)
+POST {{baseUrl_amortizaciones}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 2,
+    "periodo": "2026-10-15",
+    "tipo_periodo_id": 1
+}
+
+### ❌ ERROR: periodo no es 1 de enero (ANUAL)
+POST {{baseUrl_amortizaciones}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 2,
+    "periodo": "2026-06-01",
+    "tipo_periodo_id": 2
+}
+
+### ❌ ERROR: vacuno inexistente
+POST {{baseUrl_amortizaciones}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 99999,
+    "periodo": "2026-10-01",
+    "tipo_periodo_id": 1
+}
+
+### ❌ ERROR: vacuno VENDIDO o MUERTO
+POST {{baseUrl_amortizaciones}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 23,
+    "periodo": "2026-10-01",
+    "tipo_periodo_id": 1
+}
+
+### ❌ ERROR: duplicado sin recalcular
+POST {{baseUrl_amortizaciones}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 2,
+    "periodo": "2026-10-01",
+    "tipo_periodo_id": 1
+}
+
+### ❌ ERROR: intentar cambiar campos calculados en PATCH
+PATCH {{baseUrl_amortizaciones}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "valor_libro": 0
+}
+
+### ❌ ERROR: sin token
+GET {{baseUrl_amortizaciones}}

@@ -1,0 +1,62 @@
+# C:\sistemas\sicab\sicab-backend\src\modules\vacunos-pesajes\vacunos-pesajes.http
+# ----------------------------------------------------------------------
+# DEFINICIÓN DE VARIABLES
+# ----------------------------------------------------------------------
+@baseUrl = http://localhost:3010/api
+@baseUrl_pesajes = {{baseUrl}}/vacunos-pesajes
+@rest-client.previewOption = body
+
+### 1. OBTENER TOKEN DE AUTENTICACIÓN.
+# @name login
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "ADMIN",
+    "password": "12345678"
+}
+
+### 2. GUARDAR TOKEN EN VARIABLE.
+@authToken = {{login.response.body.token}}
+
+### LISTAR PESAJES (Por defecto activos)
+GET {{baseUrl_pesajes}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### LISTAR PESAJES FILTRADOS POR EMPRESA Y SUCURSAL
+GET {{baseUrl_pesajes}}?estado_id=1000&empresa_id=2&sucursal_id=2
+Authorization: Bearer {{authToken}}
+
+### LISTAR PESAJES POR RANGO DE FECHAS
+GET {{baseUrl_pesajes}}?fecha_pesaje_desde=2026-09-01&fecha_pesaje_hasta=2026-10-31
+Authorization: Bearer {{authToken}}
+
+### OBTENER UN PESAJE
+GET {{baseUrl_pesajes}}/1
+Authorization: Bearer {{authToken}}
+
+### CREAR PESAJE
+POST {{baseUrl_pesajes}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 2,
+    "fecha_pesaje": "2026-10-17",
+    "peso": 590.50,
+    "observaciones": "PESAJE MENSUAL OCTUBRE - CONTROL DE RUTINA"
+}
+
+### ACTUALIZAR PESAJE
+PATCH {{baseUrl_pesajes}}/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "peso": 600.00,
+    "observaciones": "PESAJE CORREGIDO - SE VERIFICÓ BALANZA"
+}
+
+### ELIMINAR PESAJE (Borrado lógico)
+DELETE {{baseUrl_pesajes}}/1
+Authorization: Bearer {{authToken}}

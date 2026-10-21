@@ -1,0 +1,84 @@
+# ============================================
+# CARPETAS DE SALIDA Y ARCHIVOS GENERADOS
+# ============================================
+salida/
+logs/
+*.log
+
+# ============================================
+# NODE.JS / BACKEND Y FRONTEND
+# ============================================
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+*.tsbuildinfo
+package-lock.json
+yarn-lock.json
+npm-debug.log
+yarn-error.log
+
+# ============================================
+# VARIABLES DE ENTORNO Y CLAVES
+# ============================================
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+*.crt
+*.p12
+
+# ============================================
+# FRONTEND (Nuxt/Vite)
+# ============================================
+.nuxt/
+**/.nuxt/
+.output/
+**/.output/
+.nitro/
+**/.nitro/
+.cache/
+**/.cache/
+
+# ============================================
+# PYTHON / MOTOR PRONÓSTICO
+# ============================================
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.so
+venv/
+**/venv/
+env/
+**/env/
+.venv/
+**/.venv/
+.pytest_cache/
+**/.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+*.egg
+
+# ============================================
+# EDITORES Y SISTEMA
+# ============================================
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+*.swo
+.vscode/
+.idea/
+*.iml
+
+# ============================================
+# ARCHIVOS SUELTOS EN LA RAÍZ (Tus .bat)
+# ============================================
+*.bat

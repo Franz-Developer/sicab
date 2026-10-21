@@ -1,0 +1,262 @@
+# C:\sicab\sicab-backend\src\modules\producciones-leche\producciones-leche.http
+# ----------------------------------------------------------------------
+# DEFINICIÓN DE VARIABLES
+# ----------------------------------------------------------------------
+@baseUrl = http://localhost:3010/api
+@baseUrl_producciones = {{baseUrl}}/producciones-leche
+@baseUrl_sucursales = {{baseUrl}}/sucursales
+@baseUrl_turnos = {{baseUrl}}/turnos-ordeno
+@baseUrl_vacunos = {{baseUrl}}/vacunos
+@baseUrl_constantes = {{baseUrl}}/constantes
+@rest-client.previewOption = body
+
+### 1. OBTENER TOKEN DE AUTENTICACIÓN (ADMIN)
+# Se debe presionar primero.
+# @name login
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "ADMIN",
+    "password": "12345678"
+}
+
+### 2. GUARDAR TOKEN EN VARIABLE (Automático)
+@authToken = {{login.response.body.token}}
+
+# ==============================================================================
+# ENDPOINT EXTRAS (Para obtener IDs válidos)
+# ==============================================================================
+
+### LISTAR SUCURSALES ACTIVAS
+GET {{baseUrl_sucursales}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### LISTAR TURNOS DE ORDEÑO ACTIVOS
+GET {{baseUrl_turnos}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### LISTAR VACUNOS ACTIVOS (Para armar los detalles)
+GET {{baseUrl_vacunos}}?estado_id=1000&limit=10
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CABECERA: LISTAR Y FILTRAR PRODUCCIONES
+# ==============================================================================
+
+### LISTAR TODAS (Activos + Históricos por defecto)
+GET {{baseUrl_producciones}}
+Authorization: Bearer {{authToken}}
+
+### LISTAR POR ESTADO ACTIVOS (1000)
+GET {{baseUrl_producciones}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### LISTAR POR ESTADO HISTÓRICOS (1002)
+GET {{baseUrl_producciones}}?estado_id=1002
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR SUCURSAL Y TURNO
+GET {{baseUrl_producciones}}?sucursal_id=2&turno_ordeno_id=2&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR RANGO DE FECHAS
+GET {{baseUrl_producciones}}?fecha_produccion_desde=2026-09-01&fecha_produccion_hasta=2026-10-31&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### PAGINACIÓN + ORDENAMIENTO
+GET {{baseUrl_producciones}}?estado_id=1000&sortField=fecha_produccion&sortOrder=-1&offset=0&limit=5
+Authorization: Bearer {{authToken}}
+
+### OBTENER PRODUCCIÓN POR ID
+GET {{baseUrl_producciones}}/2
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CABECERA: CRUD (Create, Update, Delete)
+# ==============================================================================
+
+### CREAR PRODUCCIÓN COMPLETA (Cabecera + Detalles)
+# NOTA: El backend ignora total_litros y total_neto; los calcula sumando los detalles.
+POST {{baseUrl_producciones}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "sucursal_id": 2,
+    "turno_ordeno_id": 2,
+    "fecha_produccion": "2026-10-15",
+    "total_descartado": 4.00,
+    "temperatura_promedio": 6.40,
+    "densidad_promedio": 1.0300,
+    "observaciones": "PRODUCCION TURNO MANANA - SUCURSAL VIACHA - 4 L DESCARTADOS POR MASTITIS",
+    "detalles": [
+        { "vacuno_id": 2, "litros": 18.50 },
+        { "vacuno_id": 3, "litros": 17.00 },
+        { "vacuno_id": 4, "litros": 16.50 }
+    ]
+}
+
+### ACTUALIZAR SOLO CABECERA (Descartado, Temperatura, Densidad, Obs)
+# Los totales se recalculan automáticamente.
+PATCH {{baseUrl_producciones}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "total_descartado": 5.00,
+    "temperatura_promedio": 6.80,
+    "densidad_promedio": 1.0310,
+    "observaciones": "AJUSTE: SE RECONTARON LOS LITROS DEL TURNO"
+}
+
+### ELIMINAR PRODUCCIÓN (Baja Lógica en Cascada)
+# Pasa la cabecera a 1001 y todos sus detalles activos a 1001.
+DELETE {{baseUrl_producciones}}/9
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# DETALLE: OPERACIONES ANIDADAS
+# ==============================================================================
+
+### LISTAR DETALLES DE UNA PRODUCCIÓN
+GET {{baseUrl_producciones}}/2/detalles
+Authorization: Bearer {{authToken}}
+
+### OBTENER UN DETALLE ESPECÍFICO
+GET {{baseUrl_producciones}}/2/detalles/5
+Authorization: Bearer {{authToken}}
+
+### AGREGAR UN DETALLE (Añadir vacuno a una producción existente)
+# Recalcula automáticamente total_litros y total_neto de la cabecera.
+POST {{baseUrl_producciones}}/2/detalles
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 11,
+    "litros": 15.00,
+    "observaciones": "VACA AGREGADA POSTERIOR AL CIERRE INICIAL"
+}
+
+### ACTUALIZAR UN DETALLE (Cambiar litros u observaciones)
+# Recalcula automáticamente total_litros y total_neto de la cabecera.
+PATCH {{baseUrl_producciones}}/2/detalles/5
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "litros": 20.00,
+    "observaciones": "CORRECCION DE LITROS POR ERROR DE TIPEO"
+}
+
+### ELIMINAR UN DETALLE (Baja Lógica de un vacuno)
+# Falla con 409 Conflict si es el último detalle activo.
+# Recalcula automáticamente total_litros y total_neto de la cabecera.
+DELETE {{baseUrl_producciones}}/2/detalles/5
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CASOS DE USO COMBINADOS (Escenarios reales)
+# ==============================================================================
+
+### 1. Producciones de VIACHA del mes de Octubre, ordenadas por fecha
+GET {{baseUrl_producciones}}?sucursal_id=2&fecha_produccion_desde=2026-10-01&fecha_produccion_hasta=2026-10-31&estado_id=1000&sortField=fecha_produccion&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### 2. Producciones con descartes (q=DESCARTADOS)
+GET {{baseUrl_producciones}}?estado_id=1000&q=DESCARTADOS&exactMatch=0
+Authorization: Bearer {{authToken}}
+
+### 3. Producciones históricas (para auditoría)
+GET {{baseUrl_producciones}}?estado_id=1002&sortField=fecha_produccion&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CASOS DE ERROR ESPERADOS (Para probar validaciones)
+# ==============================================================================
+
+### ❌ ERROR: duplicado (R.1 - misma sucursal, fecha y turno ACTIVO)
+# Debería pasar a HISTÓRICO la anterior y crear esta nueva.
+POST {{baseUrl_producciones}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "sucursal_id": 2,
+    "turno_ordeno_id": 2,
+    "fecha_produccion": "2026-10-15",
+    "total_descartado": 0.00,
+    "detalles": [
+        { "vacuno_id": 2, "litros": 20.00 }
+    ]
+}
+
+### ❌ ERROR: Agregar vacuno duplicado en el mismo detalle
+# 409 Conflict: "El vacuno ya está registrado en esta producción."
+POST {{baseUrl_producciones}}/2/detalles
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 2,
+    "litros": 10.00
+}
+
+### ❌ ERROR: Eliminar el último detalle activo
+# 409 Conflict: "No se puede eliminar el único vacuno de esta producción..."
+DELETE {{baseUrl_producciones}}/10/detalles/15
+Authorization: Bearer {{authToken}}
+
+### ❌ ERROR: Vacuno no productor de leche (Ej: Ternero o Toro)
+# 400 Bad Request: "El vacuno no está marcado como productor de leche." o "Categoría no apta".
+POST {{baseUrl_producciones}}/2/detalles
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 10,
+    "litros": 5.00
+}
+
+### ❌ ERROR: Modificar total_descartado mayor al total_litros
+# 409 Conflict en el recálculo o 400 Bad Request en la validación.
+PATCH {{baseUrl_producciones}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "total_descartado": 99999.00
+}
+
+### ❌ ERROR: densidad fuera de rango (máximo 1.1000)
+POST {{baseUrl_producciones}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "sucursal_id": 2,
+    "turno_ordeno_id": 2,
+    "fecha_produccion": "2026-10-18",
+    "densidad_promedio": 1.5000,
+    "detalles": [{ "vacuno_id": 2, "litros": 10.00 }]
+}
+
+### ❌ ERROR: fecha futura (chk_produccionesleche_fechaproduccion)
+POST {{baseUrl_producciones}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "sucursal_id": 2,
+    "turno_ordeno_id": 2,
+    "fecha_produccion": "2099-12-31",
+    "detalles": [{ "vacuno_id": 2, "litros": 10.00 }]
+}
+
+### ❌ ERROR: sin token (401 Unauthorized)
+GET {{baseUrl_producciones}}
+
+### ❌ ERROR: token inválido (401 Unauthorized)
+GET {{baseUrl_producciones}}
+Authorization: Bearer token_falso_12345
