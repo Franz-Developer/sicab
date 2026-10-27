@@ -22,23 +22,20 @@
             @sort="onSort"
         >
             <template #header>
-                <div class="px-3 py-1.5 bg-white">
-                    <FilterBar :filters="filters" search-placeholder="Buscar: Sucursal, código, teléfono..."
-                        :active-filters-count="filtrosActivosCount" modal-subtitle="Refina la búsqueda de sucursales"
-                        @search="onSearch" @clear="limpiarFiltros" @apply="aplicarFiltros">
-                        <template #advanced>
-                            <!-- Empresa -->
-                            <div class="md:col-span-12">
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">
-                                    Empresa
-                                </label>
-                                <BaseSelect v-model="filters.empresa_id" :options="empresaOptions" option-label="label"
-                                    option-value="value" placeholder="Todas las empresas" size="sm" filter show-clear
-                                    appendTo="body"
-                                    :loading="loadingEmpresas" @update:model-value="aplicarFiltros" class="w-full" />
-                            </div>
-                        </template>
-                    </FilterBar>
+                <div class="px-3 py-1.5 bg-white flex flex-wrap items-center gap-2">
+                    <!-- 1. Filtro de Empresa Directo (Más ancho) -->
+                    <div class="w-80 flex-shrink-0">
+                        <BaseSelect v-model="filters.empresa_id" :options="empresaOptions" option-label="label"
+                            option-value="value" placeholder="Todas las empresas" size="sm" filter show-clear
+                            appendTo="body" :loading="loadingEmpresas" @update:model-value="aplicarFiltros"
+                            class="w-full" />
+                    </div>
+
+                    <!-- 2. Buscador Global (Se adapta al espacio restante) -->
+                    <div class="flex-1 min-w-[240px]">
+                        <FilterBar :filters="filters" search-placeholder="Buscar: Sucursal, código, teléfono..."
+                            @search="onSearch" @clear="limpiarFiltros" />
+                    </div>
                 </div>
             </template>
 
@@ -625,12 +622,6 @@
     });
 
     // ============ FILTROS AVANZADOS ============
-    const filtrosActivosCount = computed<number>(() => {
-        let count = 0;
-        if (filters.value.empresa_id) count++;
-        return count;
-    });
-
     const aplicarFiltros = (): void => {
         lazyParams.value.first = 0;
         onSearch();

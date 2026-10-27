@@ -28,15 +28,7 @@ export class ProduccionLecheResponseDto {
     @Expose() @Transform(toRequiredNumber) total_descartado!: number;
     @Expose() @Transform(toRequiredNumber) total_neto!: number;
 
-    @Expose() @Transform(({ value }) => (value !== null && value !== undefined ? Number(value) : null))
-    temperatura_promedio?: number | null;
-
-    @Expose() @Transform(({ value }) => (value !== null && value !== undefined ? Number(value) : null))
-    densidad_promedio?: number | null;
-
     @Expose() observaciones?: string | null;
-
-    @Expose() @Transform(toNumber) total_vacunos?: number;
 
     @Expose()
     @Type(() => ProduccionLecheDetalleResponseDto)

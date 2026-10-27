@@ -17,6 +17,7 @@ export class CategoriaVacunoResponseDto {
     @Expose()
     @Transform(({ obj }) => transformMetadataAbreviatura(obj.es_productor_leche, CONDICION_PRODUCTOR_LECHE_METADATA))
     es_productor_leche_registro!: string;
+
     @Expose()
     @Transform(({ obj }) => transformMetadataLabel(obj.es_productor_leche, CONDICION_PRODUCTOR_LECHE_METADATA))
     es_productor_leche_label!: string;

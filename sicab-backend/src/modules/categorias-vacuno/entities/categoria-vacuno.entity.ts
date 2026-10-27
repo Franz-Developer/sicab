@@ -19,6 +19,7 @@ import { bigintTransformer } from '../../../common/utils/typeorm-transformers.ut
         (usuario_id_actualizacion IS NOT NULL AND fecha_actualizacion IS NOT NULL)
     ))
 `)
+@Check('chk_categoriasvacuno_sexo_productor', 'sexo_biologico_permitido_id = 6301 OR es_productor_leche = 6350')
 @Check('chk_categoriasvacuno_categoria_notempty', "TRIM(categoria) <> ''")
 @Check('chk_categoriasvacuno_categoria_minlength', 'LENGTH(TRIM(categoria)) >= 3')
 @Check('chk_categoriasvacuno_categoria_mayusculas', 'categoria = UPPER(categoria)')

@@ -21,10 +21,10 @@ Content-Type: application/json
 @authToken = {{login.response.body.token}}
 
 # ==============================================================================
-# AUTENTICACIÓN - USUARIO 3
+# AUTENTICACIÓN - USUARIO DE PRUEBA
 # ==============================================================================
 
-### 1.b OBTENER TOKEN USUARIO 3
+### 1.b OBTENER TOKEN USUARIO PRUEBA
 # @name loginUser3
 POST {{baseUrl}}/auth/validar
 Content-Type: application/json
@@ -34,22 +34,22 @@ Content-Type: application/json
     "password": "12345678"
 }
 
-### 2.b GUARDAR TOKEN USUARIO 3
+### 2.b GUARDAR TOKEN USUARIO PRUEBA
 # @authToken = {{loginUser3.response.body.token}}
 
 # ==============================================================================
-# ENDPOINT EXTRAS
+# ENDPOINT EXTRAS (CONSTANTES)
 # ==============================================================================
 
-###
+### OBTENER SEXOS BIOLÓGICOS
 GET {{baseUrl_constantes}}?tipo=sexo_biologico_id
 Authorization: Bearer {{authToken}}
 
-###
+### OBTENER CONDICIÓN PRODUCTOR DE LECHE
 GET {{baseUrl_constantes}}?tipo=condicion_productor_leche_id
 Authorization: Bearer {{authToken}}
 
-###
+### OBTENER ESTADOS DE VACUNO
 GET {{baseUrl_constantes}}?tipo=estado_vacuno_id
 Authorization: Bearer {{authToken}}
 
@@ -69,226 +69,11 @@ Authorization: Bearer {{authToken}}
 GET {{baseUrl_vacunos}}?estado_id=1000&sucursal_id=2&estado_vacuno_id=6400
 Authorization: Bearer {{authToken}}
 
-### OBTENER VACUNO
-GET {{baseUrl_vacunos}}/2
+### OBTENER VACUNO POR ID
+GET {{baseUrl_vacunos}}/36
 Authorization: Bearer {{authToken}}
 
-### CREAR VACUNO — Hembra productora de leche
-POST {{baseUrl_vacunos}}
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-    "sucursal_id": 2,
-    "raza_id": 2,
-    "categoria_vacuno_id": 9,
-    "arete": "V-050",
-    "nombre": "LECHERA 050",
-    "fecha_nacimiento": "2023-03-15",
-    "fecha_ingreso": "2023-03-15",
-    "sexo_biologico_id": 6301,
-    "peso_nacimiento": 40.00,
-    "peso_actual": 580.00,
-    "color": "BLANCO Y NEGRO",
-    "valor_adquisicion": 8000.00,
-    "valor_residual": 800.00,
-    "vida_util_anios": 7,
-    "tasa_amortizacion": 14.29,
-    "fecha_inicio_amortizacion": "2023-09-15",
-    "es_productor_leche": 6351,
-    "estado_vacuno_id": 6400
-}
-
-### CREAR VACUNO — Macho reproductor (TORO)
-POST {{baseUrl_vacunos}}
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-    "sucursal_id": 2,
-    "raza_id": 3,
-    "categoria_vacuno_id": 12,
-    "arete": "V-051",
-    "nombre": "TORO 051",
-    "fecha_nacimiento": "2021-01-10",
-    "fecha_ingreso": "2021-01-10",
-    "sexo_biologico_id": 6300,
-    "peso_nacimiento": 45.00,
-    "peso_actual": 850.00,
-    "color": "PARDO",
-    "valor_adquisicion": 15000.00,
-    "valor_residual": 1500.00,
-    "vida_util_anios": 7,
-    "tasa_amortizacion": 14.29,
-    "fecha_inicio_amortizacion": "2021-07-10",
-    "es_productor_leche": 6350,
-    "estado_vacuno_id": 6400
-}
-
-### CREAR VACUNO — Ternera con padre y madre registrados
-POST {{baseUrl_vacunos}}
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-    "sucursal_id": 2,
-    "raza_id": 2,
-    "categoria_vacuno_id": 2,
-    "arete": "V-052",
-    "nombre": "TERNERA 052",
-    "fecha_nacimiento": "2025-09-01",
-    "fecha_ingreso": "2025-09-01",
-    "sexo_biologico_id": 6301,
-    "peso_nacimiento": 35.00,
-    "peso_actual": 120.00,
-    "color": "BLANCO Y NEGRO",
-    "padre_arete": "V-010",
-    "madre_arete": "V-003",
-    "valor_adquisicion": 0.00,
-    "valor_residual": 0.00,
-    "vida_util_anios": 7,
-    "tasa_amortizacion": 14.29,
-    "es_productor_leche": 6350,
-    "estado_vacuno_id": 6400
-}
-
-### CREAR VACUNO — Vaca vendida (estado final)
-POST {{baseUrl_vacunos}}
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-    "sucursal_id": 2,
-    "raza_id": 2,
-    "categoria_vacuno_id": 11,
-    "arete": "V-053",
-    "nombre": "VENDIDA 053",
-    "fecha_nacimiento": "2017-02-28",
-    "fecha_ingreso": "2017-02-28",
-    "sexo_biologico_id": 6301,
-    "peso_nacimiento": 39.00,
-    "peso_actual": 520.00,
-    "color": "BLANCO Y NEGRO",
-    "valor_adquisicion": 9000.00,
-    "valor_residual": 900.00,
-    "vida_util_anios": 7,
-    "tasa_amortizacion": 14.29,
-    "fecha_inicio_amortizacion": "2017-08-28",
-    "es_productor_leche": 6350,
-    "estado_vacuno_id": 6404,
-    "fecha_salida": "2026-01-15",
-    "motivo_salida": "VENTA",
-    "peso_salida": 520.00,
-    "precio_venta": 7500.00
-}
-
-### CREAR VACUNO — Vaca muerta (estado final)
-POST {{baseUrl_vacunos}}
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-    "sucursal_id": 2,
-    "raza_id": 3,
-    "categoria_vacuno_id": 11,
-    "arete": "V-054",
-    "nombre": "MUERTA 054",
-    "fecha_nacimiento": "2016-10-05",
-    "fecha_ingreso": "2016-10-05",
-    "sexo_biologico_id": 6301,
-    "peso_nacimiento": 40.00,
-    "peso_actual": 580.00,
-    "color": "PARDO",
-    "valor_adquisicion": 8800.00,
-    "valor_residual": 880.00,
-    "vida_util_anios": 7,
-    "tasa_amortizacion": 14.29,
-    "fecha_inicio_amortizacion": "2017-04-05",
-    "es_productor_leche": 6350,
-    "estado_vacuno_id": 6405,
-    "fecha_salida": "2026-02-20",
-    "motivo_salida": "MUERTE",
-    "peso_salida": 580.00,
-    "causa_muerte": "ENFERMEDAD RESPIRATORIA"
-}
-
-### ACTUALIZAR VACUNO — Datos generales
-PATCH {{baseUrl_vacunos}}/2
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-    "nombre": "LECHERA 001 ACTUALIZADA",
-    "color": "BLANCO Y NEGRO",
-    "peso_actual": 585.00,
-    "observaciones": "PESAJE CORREGIDO POR ERROR DE TIPEO"
-}
-
-### ACTUALIZAR VACUNO — Fotografía
-PATCH {{baseUrl_vacunos}}/2
-Authorization: Bearer {{authToken}}
-Content-Type: multipart/form-data; boundary=boundary
-
---boundary
-Content-Disposition: form-data; name="foto"; filename="vaca-001.png"
-Content-Type: image/png
-
-< ./fotos/vaca-001.png
---boundary--
-
-### ACTUALIZAR VACUNO — Cambiar a EN_TRATAMIENTO
-PATCH {{baseUrl_vacunos}}/2
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-    "estado_vacuno_id": 6401
-}
-
-### CAMBIAR ESTADO — VENDIDO
-PATCH {{baseUrl_vacunos}}/2/estado
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-    "estado_vacuno_id": 6404,
-    "fecha_salida": "2026-10-16",
-    "motivo_salida": "VENTA",
-    "peso_salida": 580.00,
-    "precio_venta": 7500.00
-}
-
-### CAMBIAR ESTADO — MUERTO
-PATCH {{baseUrl_vacunos}}/3/estado
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-    "estado_vacuno_id": 6405,
-    "fecha_salida": "2026-10-16",
-    "motivo_salida": "MUERTE",
-    "peso_salida": 560.00,
-    "causa_muerte": "ENFERMEDAD RESPIRATORIA"
-}
-
-### CAMBIAR ESTADO — SECA (período seco)
-PATCH {{baseUrl_vacunos}}/4/estado
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-    "estado_vacuno_id": 6402
-}
-
-### ELIMINAR VACUNO (Borrado lógico por error de carga)
-DELETE {{baseUrl_vacunos}}/2
-Authorization: Bearer {{authToken}}
-
-# ==============================================================================
-# LISTAR VACAS VÁLIDAS PARA PRODUCCIÓN (Hembras, Productoras, Categoría VACA_LECHERA)
-# ==============================================================================
-
-### VACAS LECHERAS ACTIVAS
+### VACAS LECHERAS ACTIVAS (Hembras, Productoras, Categoría VACA_LECHERA)
 GET {{baseUrl_vacunos}}?estado_id=1000&sexo_biologico_id=6301&es_productor_leche=6351&categoria_vacuno_id=9&estado_vacuno_id=6400
 Authorization: Bearer {{authToken}}
 
@@ -296,11 +81,11 @@ Authorization: Bearer {{authToken}}
 GET {{baseUrl_vacunos}}?estado_id=1000&sucursal_id=2&sexo_biologico_id=6301&es_productor_leche=6351&categoria_vacuno_id=9&estado_vacuno_id=6400
 Authorization: Bearer {{authToken}}
 
-### BUSCAR VACA POR ARETE
-GET {{baseUrl_vacunos}}?estado_id=1000&q=V-001&exactMatch=1
+### BUSCAR VACA POR ARETE (Exacto)
+GET {{baseUrl_vacunos}}?estado_id=1000&q=000035&exactMatch=1
 Authorization: Bearer {{authToken}}
 
-### BUSCAR VACAS CON FILTRO DE TEXTO
+### BUSCAR VACAS CON FILTRO DE TEXTO (Flexible)
 GET {{baseUrl_vacunos}}?estado_id=1000&q=LECHERA&exactMatch=0
 Authorization: Bearer {{authToken}}
 
@@ -308,7 +93,15 @@ Authorization: Bearer {{authToken}}
 GET {{baseUrl_vacunos}}?estado_id=1000&fecha_ingreso_desde=2024-01-01&fecha_ingreso_hasta=2024-12-31
 Authorization: Bearer {{authToken}}
 
-### VACUNOS POR RANGO DE PESO (usando sortField para ordenar)
+### VACUNOS POR GESTIÓN DE INGRESO (2024)
+GET {{baseUrl_vacunos}}?estado_id=1000&gestion_ingreso=2024
+Authorization: Bearer {{authToken}}
+
+### VACUNOS POR GESTIÓN DE NACIMIENTO (2023)
+GET {{baseUrl_vacunos}}?estado_id=1000&gestion_nacimiento=2023
+Authorization: Bearer {{authToken}}
+
+### VACUNOS ORDENADOS POR PESO (Mayor a menor)
 GET {{baseUrl_vacunos}}?estado_id=1000&estado_vacuno_id=6400&sortField=peso_actual&sortOrder=-1&limit=10
 Authorization: Bearer {{authToken}}
 
@@ -321,25 +114,192 @@ GET {{baseUrl_vacunos}}?estado_id=1002
 Authorization: Bearer {{authToken}}
 
 ### VACUNOS VENDIDOS (finales)
-GET {{baseUrl_vacunos}}?estado_id=1000&estado_vacuno_id=6404
+GET {{baseUrl_vacunos}}?estado_id=1002&estado_vacuno_id=6404
 Authorization: Bearer {{authToken}}
 
 ### VACUNOS MUERTOS (finales)
-GET {{baseUrl_vacunos}}?estado_id=1000&estado_vacuno_id=6405
+GET {{baseUrl_vacunos}}?estado_id=1002&estado_vacuno_id=6405
 Authorization: Bearer {{authToken}}
 
-### VACUNOS EN TRATAMIENTO
+### VACUNOS FAENADOS (finales)
+GET {{baseUrl_vacunos}}?estado_id=1002&estado_vacuno_id=6402
+Authorization: Bearer {{authToken}}
+
+### VACUNOS PARA FAENA (vivos, en libros)
 GET {{baseUrl_vacunos}}?estado_id=1000&estado_vacuno_id=6401
 Authorization: Bearer {{authToken}}
 
-### VACUNOS SECOS (no producen leche temporalmente)
-GET {{baseUrl_vacunos}}?estado_id=1000&estado_vacuno_id=6402
-Authorization: Bearer {{authToken}}
-
-### VACUNOS DE DESCARTE
+### VACUNOS PARA VENTA (vivos, en libros)
 GET {{baseUrl_vacunos}}?estado_id=1000&estado_vacuno_id=6403
 Authorization: Bearer {{authToken}}
 
+### VACUNOS CON PADRE Y MADRE REALES (no comodín)
+GET {{baseUrl_vacunos}}?estado_id=1000&padre_id=2&madre_id=6
+Authorization: Bearer {{authToken}}
+
 ### PAGINACIÓN Y ORDENAMIENTO
-GET {{baseUrl_vacunos}}?estado_id=1000&sortField=arete&sortOrder=1&offset=0&limit=10
+GET {{baseUrl_vacunos}}?limit=10&offset=0&sortField=vacuno_id&sortOrder=-1&exactMatch=0&empresa_id=2&sucursal_id=2
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# GESTIONES DISPONIBLES (Años con datos para filtros)
+# ==============================================================================
+
+### OBTENER AÑOS DE INGRESO Y NACIMIENTO
+GET {{baseUrl_vacunos}}/gestiones
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CRUD VACUNOS
+# ==============================================================================
+
+### CREAR VACUNO — Hembra productora de leche
+POST {{baseUrl_vacunos}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "sucursal_id": 2,
+    "raza_id": 2,
+    "tipo_semoviente_id": 2,
+    "nombre": "LECHERA 050",
+    "fecha_nacimiento": "2023-03-15",
+    "fecha_ingreso": "2023-03-15",
+    "sexo_biologico_id": 6301,
+    "peso_nacimiento": 40.00,
+    "peso_actual": 580.00,
+    "color": "BLANCO Y NEGRO",
+    "padre_id": 2,
+    "madre_id": 6,
+    "valor_adquisicion": 8000.00,
+    "valor_residual": 800.00,
+    "es_productor_leche": 6351
+}
+
+### ACTUALIZAR VACUNO — Datos generales (Solo campos permitidos)
+PATCH {{baseUrl_vacunos}}/36
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "nombre": "BEBE ACTUALIZADO",
+    "color": "BLANCO Y NEGRO",
+    "peso_actual": 45.00,
+    "observaciones": "PESAJE CORREGIDO POR ERROR DE TIPEO"
+}
+
+### ACTUALIZAR VACUNO — Fotografía
+PATCH {{baseUrl_vacunos}}/36
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="foto"; filename="vaca-001.png"
+Content-Type: image/png
+
+< ./fotos/vaca-001.png
+--boundary--
+
+### CAMBIAR VACUNO A PARA_FAENA (6401)
+PATCH {{baseUrl_vacunos}}/36/estado
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "estado_vacuno_id": 6401
+}
+
+### CAMBIAR VACUNO A PARA_VENTA (6403)
+PATCH {{baseUrl_vacunos}}/36/estado
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "estado_vacuno_id": 6403
+}
+
+### VENDER VACUNO — Solo desde PARA_VENTA (6403)
+PATCH {{baseUrl_vacunos}}/36/estado
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "estado_vacuno_id": 6404,
+    "fecha_salida": "2026-10-24",
+    "motivo_salida": "VENTA POR EXCESO DE PRODUCCION",
+    "peso_salida": 580.00,
+    "precio_venta": 15000.00
+}
+
+### FAENAR VACUNO — Solo desde PARA_FAENA (6401)
+PATCH {{baseUrl_vacunos}}/36/estado
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "estado_vacuno_id": 6402,
+    "fecha_salida": "2026-10-24",
+    "motivo_salida": "FAENA PROGRAMADA",
+    "peso_salida": 580.00,
+    "precio_venta": 15000.00
+}
+
+### REGISTRAR MUERTE DE VACUNO (Estado Final)
+PATCH {{baseUrl_vacunos}}/36/estado
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "estado_vacuno_id": 6405,
+    "fecha_salida": "2026-10-24",
+    "motivo_salida": "MUERTE POR ENFERMEDAD",
+    "peso_salida": 580.00,
+    "causa_muerte": "NEUMONIA BOVINA"
+}
+
+### TRANSFERIR VACUNO A OTRA SUCURSAL
+PATCH {{baseUrl_vacunos}}/36/transferir
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "sucursal_destino_id": 3,
+    "motivo": "TRASLADO POR ROTACIÓN DE HATO"
+}
+
+### ELIMINAR VACUNO (Borrado lógico por error de carga)
+DELETE {{baseUrl_vacunos}}/36
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# GESTIONES DISPONIBLES (Años con datos para filtros)
+# ==============================================================================
+
+### OBTENER AÑOS DE INGRESO Y NACIMIENTO
+GET {{baseUrl_vacunos}}/gestiones
+Authorization: Bearer {{authToken}}
+
+### OBTENER VACUNO POR ID
+GET {{baseUrl_vacunos}}/36
+Authorization: Bearer {{authToken}}
+
+
+
+### OBTENER VACUNO POR ID
+GET {{baseUrl_vacunos}}/2
+Authorization: Bearer {{authToken}}
+
+
+
+### OBTENER VACUNO POR ID
+GET {{baseUrl_vacunos}}/64
+Authorization: Bearer {{authToken}}
+
+
+### PAGINACIÓN Y ORDENAMIENTO
+GET {{baseUrl_vacunos}}?limit=10&offset=0&sortField=vacuno_id&sortOrder=-1&exactMatch=0&empresa_id=2&sucursal_id=2
+Authorization: Bearer {{authToken}}
+
+### BUSCAR VACUNO POR ARETE (Exacto)
+GET {{baseUrl_vacunos}}?estado_id=1000&arete=000002
 Authorization: Bearer {{authToken}}

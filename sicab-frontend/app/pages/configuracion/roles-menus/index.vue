@@ -7,25 +7,24 @@
             :sortOrder="lazyParams.sortOrder" @page="onPage" @sort="onSort">
             <!-- ═══════════ FILTROS ═══════════ -->
             <template #header>
-                <div class="px-3 py-1.5 bg-white">
-                    <FilterBar :filters="filters" search-placeholder="Buscar: Rol, código, título o URL..."
-                        :active-filters-count="filtrosActivosCount" modal-title="Filtrar Permisos"
-                        modal-subtitle="Refina la búsqueda de permisos por menú" @search="onSearch"
-                        @clear="limpiarFiltros" @apply="aplicarFiltros">
-                        <template #advanced>
-                            <!-- Rol (OBLIGATORIO) -->
-                            <div class="md:col-span-12">
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">
-                                    Rol <span class="text-red-500">*</span>
-                                </label>
-                                <BaseSelect v-model="filters.rol_id" :options="rolOptions" option-label="label"
-                                    option-value="value" placeholder="Seleccione un rol" size="sm" filter
-                                    appendTo="body" :loading="loadingRoles"
-                                    v-tooltip.top="'Selecciona el rol para gestionar sus permisos por tabla.'"
-                                    @update:model-value="onFilterChange" class="w-full" />
-                            </div>
-                        </template>
-                    </FilterBar>
+                <div class="px-3 py-1.5 bg-white flex flex-wrap items-center gap-2">
+
+                    <!-- 1. Filtro de Rol Directo (PRIMERO) -->
+                    <div class="w-64 flex-shrink-0">
+                        <BaseSelect v-model="filters.rol_id" :options="rolOptions" option-label="label"
+                            option-value="value" placeholder="Seleccione un rol" size="sm" filter show-clear
+                            appendTo="body" :loading="loadingRoles"
+                            v-tooltip.top="'Selecciona el rol para gestionar sus permisos.'"
+                            @update:model-value="onFilterChange" class="w-full" />
+                    </div>
+
+                    <!-- 2. Buscador Global + 3. Coincidencia (A la derecha) -->
+                    <!-- Al no tener el slot #advanced, el botón de filtros desaparece automáticamente -->
+                    <div class="flex-1 min-w-[240px]">
+                        <FilterBar :filters="filters" search-placeholder="Buscar: Rol, código, título o URL..."
+                            @search="onSearch" @clear="limpiarFiltros" />
+                    </div>
+
                 </div>
             </template>
 
@@ -174,17 +173,6 @@
     };
 
     // ============ FILTROS AVANZADOS ============
-    const filtrosActivosCount = computed<number>(() => {
-        let count = 0;
-        if (filters.value.rol_id) count++;
-        return count;
-    });
-
-    const aplicarFiltros = (): void => {
-        lazyParams.value.first = 0;
-        onSearch();
-    };
-
     const limpiarFiltros = (): void => {
         filters.value.rol_id = null;
         filters.value.global = '';

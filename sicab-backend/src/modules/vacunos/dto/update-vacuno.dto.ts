@@ -3,5 +3,7 @@ import { PartialType, OmitType } from '@nestjs/mapped-types';
 import { CreateVacunoDto } from './create-vacuno.dto';
 
 export class UpdateVacunoDto extends PartialType(
-    OmitType(CreateVacunoDto, [] as const)
+    OmitType(CreateVacunoDto, [
+        'sucursal_id',
+    ] as const)
 ) {}

@@ -23,7 +23,9 @@
                 <div class="px-3 py-1.5 bg-white">
                     <FilterBar :filters="filters" search-placeholder="Buscar: Rol, código o tabla..."
                         :active-filters-count="filtrosActivosCount" modal-title="Filtrar Permisos"
-                        modal-subtitle="Refina la búsqueda de permisos rol x tabla" @search="onSearch"
+                        modal-subtitle="Refina la búsqueda de permisos rol x tabla"
+                        modal-width="w-[95vw] sm:w-[90vw] md:w-[480px]"
+                        @search="onSearch"
                         @clear="limpiarFiltros" @apply="aplicarFiltros">
                         <template #advanced>
                             <!-- Rol (OBLIGATORIO) -->

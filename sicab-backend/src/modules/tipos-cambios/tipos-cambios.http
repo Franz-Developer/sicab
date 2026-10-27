@@ -28,6 +28,10 @@ Content-Type: application/json
 GET {{baseUrl_tipos_cambios}}
 Authorization: Bearer {{authToken}}
 
+### LISTAR TODOS (Activos + Históricos)
+GET {{baseUrl_tipos_cambios}}?limit=10&offset=0&sortField=tipo_cambio_id&sortOrder=-1&exactMatch=0
+Authorization: Bearer {{authToken}}
+
 ### LISTAR CON PAGINACIÓN Y ORDEN
 GET {{baseUrl_tipos_cambios}}?limit=10&offset=0&sortField=tipo_cambio_id&sortOrder=-1
 Authorization: Bearer {{authToken}}
@@ -166,4 +170,73 @@ Authorization: Bearer {{authToken}}
 
 ### 14. BÚSQUEDA POR USUARIO + ESTADO (Registrados por ADMIN, solo activos)
 GET {{baseUrl_tipos_cambios}}?usuario_id=2&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### BORRAR GESTIÓN 2029 (Debe fallar si la última es 2026)
+POST {{baseUrl_tipos_cambios}}/borrar-gestion/2029
+Authorization: Bearer {{authToken}}
+
+###
+GET {{baseUrl_tipos_cambios}}
+Authorization: Bearer {{authToken}}
+
+
+### LISTAR TASAS DEL AÑO 2024 COMPLETO (01/01/2024 al 31/12/2024)
+GET {{baseUrl_tipos_cambios}}?fecha_desde=2024-01-01&fecha_hasta=2024-12-31&limit=10&offset=0&sortField=fecha_cotizacion&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# GESTIONES DISPONIBLES
+# ==============================================================================
+
+### OBTENER GESTIONES DISPONIBLES (años con tasas registradas)
+GET {{baseUrl_tipos_cambios}}/gestiones
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# VALORES INICIALES (PARA EL MODAL DE NUEVO TIPO DE CAMBIO)
+# ==============================================================================
+
+### OBTENER VALORES INICIALES (fecha, factor_compra, factor_venta)
+GET {{baseUrl_tipos_cambios}}/valores-iniciales
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# IMPORTAR EXCEL (UFV)
+# ==============================================================================
+
+### IMPORTAR EXCEL UFV 2025
+POST {{baseUrl_tipos_cambios}}/importar-excel
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="cotizacion_UFV_2025.xls"
+Content-Type: application/vnd.ms-excel
+
+< ./cotizacion_UFV_2025.xls
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+# ==============================================================================
+# FILTRO POR GESTIÓN (AÑO EXACTO)
+# ==============================================================================
+
+### 15. FILTRAR SOLO LA GESTIÓN 2024
+GET {{baseUrl_tipos_cambios}}?gestion=2024
+Authorization: Bearer {{authToken}}
+
+### 16. FILTRAR GESTIÓN 2025 Y ORDENAR POR FECHA DESCENDENTE
+GET {{baseUrl_tipos_cambios}}?gestion=2025&sortField=fecha_cotizacion&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### 17. COMBINAR GESTIÓN + MONEDA (Ej: Tasas UFV de la gestión 2024)
+GET {{baseUrl_tipos_cambios}}?gestion=2024&origen_moneda_id=2300&destino_moneda_id=2303
+Authorization: Bearer {{authToken}}
+
+### 18. COMBINAR GESTIÓN + ESTADO (Ej: Solo tasas activas de la gestión 2026)
+GET {{baseUrl_tipos_cambios}}?gestion=2026&estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### 19. GESTIÓN CON PAGINACIÓN (Ej: Traer los primeros 10 registros de 2023)
+GET {{baseUrl_tipos_cambios}}?gestion=2023&limit=10&offset=0
 Authorization: Bearer {{authToken}}

@@ -166,7 +166,7 @@
 
 <script setup lang="ts">
     import { ref, computed, onMounted } from 'vue';
-    import { getTodayLocal, toLocalDateInput, formatFecha } from '~/utils/date';
+    import { getTodayLocal, toLocalDateInput } from '~/utils/date';
     import { ESTADO_ACTIVO } from '~/constants/estados.constant';
     import jsPDF from 'jspdf';
     import autoTable from 'jspdf-autotable';
@@ -342,7 +342,7 @@
 
             // 4. Armar la tabla de Detalle (usando `por_fecha` que es lo que devuelve el backend actualmente)
             const tableBody = data.value.por_fecha.map((row: any) => [
-                formatFecha(row.fecha, true),
+                row.fecha, true,
                 'TODOS',
                 formatNumber(row.total_litros),
                 '—',

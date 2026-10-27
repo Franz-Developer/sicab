@@ -149,7 +149,6 @@ export class TrabajadoresService extends BaseService {
         return runInTransaction(this.dataSource, async (manager) => {
             await this.validarEstadoCivilPorGenero(dto.genero_id, dto.estado_civil_id);
             await this.validarCategoriaLicencia(dto.categoria_licencia_id);
-            await this.validarFechasNoFuturas(dto.fecha_nacimiento, dto.fecha_contratacion);
 
             if (!dto.foto) {
                 throw new DomainException(
@@ -345,11 +344,6 @@ export class TrabajadoresService extends BaseService {
                 }
             }
 
-            await this.validarFechasNoFuturas(
-                dto.fecha_nacimiento ?? trabajadorActual.fecha_nacimiento,
-                dto.fecha_contratacion ?? trabajadorActual.fecha_contratacion,
-            );
-
             try {
                 const camposAfectados = Object.keys(dtoProcesado).filter(
                     key => key !== 'foto' && key !== 'qr',
@@ -450,27 +444,5 @@ export class TrabajadoresService extends BaseService {
 
         const nombreArchivo = nombreFoto.replace(/^persons\//, '');
         return this.fileValidator.validarArchivoFisico(nombreArchivo, 'persons');
-    }
-
-    private async validarFechasNoFuturas(
-        fechaNacimiento?: Date | null,
-        fechaContratacion?: Date | null,
-    ): Promise<void> {
-        const hoy = new Date();
-        hoy.setHours(23, 59, 59, 999); // permitir el día completo de hoy
-
-        if (fechaNacimiento && new Date(fechaNacimiento) > hoy) {
-            throw new DomainException(
-                'La fecha de nacimiento no puede ser futura.',
-                { httpStatus: HttpStatus.BAD_REQUEST },
-            );
-        }
-
-        if (fechaContratacion && new Date(fechaContratacion) > hoy) {
-            throw new DomainException(
-                'La fecha de contratación no puede ser futura.',
-                { httpStatus: HttpStatus.BAD_REQUEST },
-            );
-        }
     }
 }

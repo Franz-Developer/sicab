@@ -192,7 +192,8 @@
                             Productor de Leche <span class="text-red-500">*</span>
                         </label>
                         <BaseSelect v-model="formObj.es_productor_leche" :options="productorLecheOptions"
-                            option-label="label" option-value="value" placeholder="Seleccionar..." size="sm"
+                            option-label="label" option-value="value" option-disabled="disabled"
+                            placeholder="Seleccionar..." size="sm"
                             @update:model-value="touched.es_productor_leche = true" />
                         <small v-if="(submitted || touched.es_productor_leche) && formObj.es_productor_leche == null"
                             class="text-red-500 font-semibold text-[10px]">
@@ -253,21 +254,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted } from 'vue';
-import { SEXO_BIOLOGICO_METADATA, CONDICION_PRODUCTOR_LECHE_METADATA } from '~/constants/estados.constant';
+import { ref, computed, nextTick, onMounted, watch } from 'vue';
+import { SEXO_BIOLOGICO_METADATA, CONDICION_PRODUCTOR_LECHE_METADATA, SexoBiologico, CondicionProductorLeche } from '~/constants/estados.constant';
 
 useHead({ title: 'Categorías de Vacuno' });
-
-// ✅ Opciones derivadas de los enums
-const productorLecheOptions = Object.values(CONDICION_PRODUCTOR_LECHE_METADATA).map(meta => ({
-    label: meta.label,
-    value: meta.id
-}));
-
-const sexoOptions = Object.values(SEXO_BIOLOGICO_METADATA).map(meta => ({
-    label: meta.label,
-    value: meta.id
-}));
 
 const {
     items, loading, totalRecords, filters, lazyParams,
@@ -289,8 +279,8 @@ const {
     defaultFilters: {
         global: '',
         exactMatch: 0,
-        es_productor_leche: undefined,        // ✅ undefined en lugar de null
-        sexo_biologico_permitido_id: undefined, // ✅ undefined en lugar de null
+        es_productor_leche: undefined,
+        sexo_biologico_permitido_id: undefined,
     },
 
     getExtraFilters: (f: Record<string, any>) => {
@@ -320,15 +310,15 @@ const {
         descripcion: '',
         edad_min_meses: null,
         edad_max_meses: null,
-        es_productor_leche: CONDICION_PRODUCTOR_LECHE_METADATA[6350]?.id ?? 6350,
-        sexo_biologico_permitido_id: SEXO_BIOLOGICO_METADATA[6300]?.id ?? 6300,
+        es_productor_leche: CondicionProductorLeche.NO_PRODUCTOR,
+        sexo_biologico_permitido_id: SexoBiologico.MACHO,
     }),
 
     buildPayload: (form: any) => {
         const payload: Record<string, any> = {
             categoria: form.categoria?.trim().toUpperCase(),
             codigo: form.codigo?.trim().toUpperCase(),
-            es_productor_leche: Number(form.es_productor_leche ?? 6350),
+            es_productor_leche: Number(form.es_productor_leche ?? CondicionProductorLeche.NO_PRODUCTOR),
             sexo_biologico_permitido_id: Number(form.sexo_biologico_permitido_id),
         };
 
@@ -415,9 +405,42 @@ const {
             return false;
         }
 
+        if (
+            Number(form.sexo_biologico_permitido_id) === SexoBiologico.MACHO &&
+            Number(form.es_productor_leche) === CondicionProductorLeche.PRODUCTOR
+        ) {
+            notify(
+                'warn',
+                'Combinación inválida',
+                'Solo las hembras pueden ser productoras de leche. Si el sexo es MACHO, la condición debe ser NO PRODUCTOR.'
+            );
+            return false;
+        }
+
         return true;
     },
 });
+
+const esMachoSeleccionado = computed(
+    () => Number(formObj.value.sexo_biologico_permitido_id) === SexoBiologico.MACHO
+);
+
+const sexoOptions = Object.values(SEXO_BIOLOGICO_METADATA)
+    .sort((a, b) => Number(b.es_defecto) - Number(a.es_defecto) || a.id - b.id)
+    .map(meta => ({
+        label: meta.label,
+        value: meta.id
+    }));
+
+const productorLecheOptions = computed(() =>
+    Object.values(CONDICION_PRODUCTOR_LECHE_METADATA)
+        .sort((a, b) => Number(b.es_defecto) - Number(a.es_defecto) || a.id - b.id)
+        .map(meta => ({
+            label: meta.label,
+            value: meta.id,
+            disabled: meta.id === CondicionProductorLeche.PRODUCTOR && esMachoSeleccionado.value
+        }))
+);
 
 const tituloDialog = computed(() => isUpdate.value ? 'EDITAR CATEGORÍA' : 'NUEVA CATEGORÍA');
 
@@ -433,6 +456,18 @@ const rangoEdadesInvalido = computed(() => {
     if (min == null || min === '' || max == null || max === '') return false;
     return Number(min) > Number(max);
 });
+
+watch(
+    () => formObj.value.sexo_biologico_permitido_id,
+    (nuevoSexo) => {
+        if (
+            Number(nuevoSexo) === SexoBiologico.MACHO &&
+            Number(formObj.value.es_productor_leche) === CondicionProductorLeche.PRODUCTOR
+        ) {
+            formObj.value.es_productor_leche = CondicionProductorLeche.NO_PRODUCTOR;
+        }
+    }
+);
 
 const categoriaRef = ref<any>(null);
 

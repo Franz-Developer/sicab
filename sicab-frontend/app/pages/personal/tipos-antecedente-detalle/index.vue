@@ -124,11 +124,11 @@
                         </div>
                         <div class="expansion-item">
                             <span class="expansion-label">Fecha Registro:</span>
-                            <span class="expansion-value">{{ formatFecha(data.fecha_registro) || '—' }}</span>
+                            <span class="expansion-value">{{ data.fecha_registro || '—' }}</span>
                         </div>
                         <div class="expansion-item">
                             <span class="expansion-label">Fecha Actualización:</span>
-                            <span class="expansion-value">{{ formatFecha(data.fecha_actualizacion) || '—' }}</span>
+                            <span class="expansion-value">{{ data.fecha_actualizacion || '—' }}</span>
                         </div>
                     </div>
                 </div>
@@ -403,7 +403,6 @@
 
 <script setup lang="ts">
     import { ref, computed, watch, nextTick, onMounted } from 'vue';
-    import { formatFecha } from '~/utils/date';
     import { useAuthStore } from '@/stores/auth';
     import { TipoAntecedente, TIPO_ANTECEDENTE_METADATA } from '~/constants/estados.constant';
 

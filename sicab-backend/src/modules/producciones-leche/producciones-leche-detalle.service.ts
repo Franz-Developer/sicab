@@ -15,6 +15,7 @@ import { UpdateProduccionLecheDetalleDto } from './dto/update-produccion-leche-d
 import { FindProduccionesLecheDetalleQueryDto } from './dto/find-producciones-leche-detalle-query.dto';
 import { ProduccionLecheDetalleResponseDto } from './dto/produccion-leche-detalle-response.dto';
 import { PaginatedResult } from '../../common/interfaces/pagination.interface';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ProduccionLecheDetalleService extends BaseService {
@@ -115,7 +116,6 @@ export class ProduccionLecheDetalleService extends BaseService {
             throw new DomainException('La producción cabecera no existe o está histórica.', { httpStatus: HttpStatus.NOT_FOUND });
         }
 
-        // 3. Validar que el descartado no supere los nuevos litros
         if (Number(cabecera.total_descartado) > nuevoTotalLitros) {
             throw new DomainException(
                 `Operación denegada: los litros resultantes en los detalles (${nuevoTotalLitros}) son menores al total descartado actual de la cabecera (${cabecera.total_descartado}). Modifique el total_descartado primero.`,
@@ -123,12 +123,43 @@ export class ProduccionLecheDetalleService extends BaseService {
             );
         }
 
-        // 4. Actualizar cabecera
         cabecera.total_litros = nuevoTotalLitros;
         cabecera.total_neto = Number((nuevoTotalLitros - Number(cabecera.total_descartado)).toFixed(2));
         cabecera.marcarActualizacion(usuarioId);
 
         await manager.save(cabecera);
+    }
+
+    private async obtenerCabeceraActiva(
+        produccionLecheId: number,
+        manager: EntityManager,
+    ): Promise<ProduccionLeche> {
+        const cabecera = await manager.findOne(ProduccionLeche, {
+            where: { produccion_leche_id: produccionLecheId }
+        });
+
+        if (!cabecera) {
+            throw new DomainException(
+                `La producción con ID ${produccionLecheId} no existe.`,
+                { httpStatus: HttpStatus.NOT_FOUND }
+            );
+        }
+
+        if (cabecera.estado_id !== ESTADO_ACTIVO) {
+            const estadoTexto =
+                cabecera.estado_id === Estado.HISTORICO
+                    ? 'histórica'
+                    : cabecera.estado_id === Estado.BORRADO
+                        ? 'borrada'
+                        : `en estado ${cabecera.estado_id}`;
+
+            throw new DomainException(
+                `La producción está ${estadoTexto}. No se pueden modificar sus detalles.`,
+                { httpStatus: HttpStatus.CONFLICT }
+            );
+        }
+
+        return cabecera;
     }
 
     async create(
@@ -137,12 +168,7 @@ export class ProduccionLecheDetalleService extends BaseService {
         usuarioId: number
     ): Promise<ProduccionLecheDetalleResponseDto> {
         return runInTransaction(this.dataSource, async (manager) => {
-            const cabecera = await manager.findOne(ProduccionLeche, {
-                where: { produccion_leche_id: produccionLecheId, estado_id: ESTADO_ACTIVO }
-            });
-            if (!cabecera) {
-                throw new DomainException('La producción no existe o ya es histórica. No se pueden agregar detalles.', { httpStatus: HttpStatus.NOT_FOUND });
-            }
+            const cabecera = await this.obtenerCabeceraActiva(produccionLecheId, manager);
 
             await this.vacunoValidador.validarProductorLeche(dto.vacuno_id, cabecera.sucursal_id, manager);
 
@@ -153,12 +179,11 @@ export class ProduccionLecheDetalleService extends BaseService {
                 throw new DomainException('El vacuno ya está registrado en esta producción.', { httpStatus: HttpStatus.CONFLICT });
             }
 
-            // 4. Crear detalle
             const nuevoDetalle = await manager.save(ProduccionLecheDetalle, {
                 produccion_leche_id: produccionLecheId,
                 vacuno_id: dto.vacuno_id,
                 litros: dto.litros,
-                turno_ordeno_id: cabecera.turno_ordeno_id, // Se hereda de la cabecera
+                turno_ordeno_id: cabecera.turno_ordeno_id,
                 observaciones: dto.observaciones ?? null,
                 usuario_id_registro: Number(usuarioId),
             });
@@ -176,6 +201,8 @@ export class ProduccionLecheDetalleService extends BaseService {
         usuarioId: number
     ): Promise<ProduccionLecheDetalleResponseDto> {
         return runInTransaction(this.dataSource, async (manager) => {
+            await this.obtenerCabeceraActiva(produccionLecheId, manager);
+
             const detalle = await manager.findOne(ProduccionLecheDetalle, {
                 where: { produccion_leche_detalle_id: detalleId, produccion_leche_id: produccionLecheId, estado_id: ESTADO_ACTIVO },
                 lock: { mode: 'pessimistic_write' }
@@ -202,6 +229,8 @@ export class ProduccionLecheDetalleService extends BaseService {
         usuarioId: number
     ): Promise<ProduccionLecheDetalleResponseDto> {
         return runInTransaction(this.dataSource, async (manager) => {
+            await this.obtenerCabeceraActiva(produccionLecheId, manager);
+
             const detalle = await manager.findOne(ProduccionLecheDetalle, {
                 where: { produccion_leche_detalle_id: detalleId, produccion_leche_id: produccionLecheId, estado_id: ESTADO_ACTIVO },
                 lock: { mode: 'pessimistic_write' }
@@ -227,21 +256,55 @@ export class ProduccionLecheDetalleService extends BaseService {
             await manager.save(detalle);
             await this.recalcularTotalesCabecera(produccionLecheId, usuarioId, manager);
 
-            // ✅ CORRECCIÓN: Retornar la entidad directamente evita el error 404
-            return detalle as unknown as ProduccionLecheDetalleResponseDto;
+            return this.findOne<ProduccionLecheDetalleResponseDto>(detalleId, usuarioId, manager);
         });
     }
 
     async findAllByProduccion(
         produccionLecheId: number,
         queryDto: FindProduccionesLecheDetalleQueryDto,
-        usuarioId: number
+        _usuarioId: number
     ): Promise<PaginatedResult<ProduccionLecheDetalleResponseDto>> {
-        return super.findAll<ProduccionLecheDetalleResponseDto>(
-            queryDto,
-            usuarioId,
-            `t.produccion_leche_id = $1`,
-            [produccionLecheId]
+        const query = `
+            SELECT
+                t.produccion_leche_detalle_id,
+                t.produccion_leche_id,
+                t.vacuno_id,
+                v.arete AS vacuno_arete,
+                v.nombre AS vacuno_nombre,
+                rz.raza AS raza_nombre,
+                ct.categoria AS categoria_nombre,
+                t.litros,
+                t.turno_ordeno_id,
+                t.observaciones,
+                t.estado_id,
+                t.usuario_id_registro,
+                t.usuario_id_actualizacion,
+                t.usuario_id_baja,
+                t.fecha_registro,
+                t.fecha_actualizacion,
+                t.fecha_baja
+            FROM producciones_leche_detalle t
+            INNER JOIN vacunos v ON v.vacuno_id = t.vacuno_id
+            INNER JOIN razas rz ON rz.raza_id = v.raza_id
+            INNER JOIN categorias_vacuno ct ON ct.categoria_vacuno_id = v.categoria_vacuno_id
+            WHERE t.produccion_leche_id = $1
+              AND t.estado_id = $2
+            ORDER BY t.produccion_leche_detalle_id DESC
+        `;
+
+        const estadoId = queryDto.estado_id ?? ESTADO_ACTIVO;
+        const results = await this.dataSource.query(query, [produccionLecheId, estadoId]);
+
+        const mappedData = results.map((row: any) =>
+            plainToInstance(ProduccionLecheDetalleResponseDto, row, { excludeExtraneousValues: true })
         );
+
+        return {
+            data: mappedData,
+            total: mappedData.length,
+            limit: queryDto.limit || 1000,
+            offset: queryDto.offset || 0
+        };
     }
 }

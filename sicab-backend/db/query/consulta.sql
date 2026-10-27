@@ -23,15 +23,21 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
 ORDER BY kcu.table_name;
 */
 
-UPDATE menus
-SET
-    estado_id = 1001,
-    usuario_id_baja = 2,
-    fecha_baja = CURRENT_TIMESTAMP
-WHERE menu_id IN (10, 30, 34, 38)
-	AND estado_id = 1000;
-
-WHERE raza_id IN (1, 2, 3, 4);
-
-SELECT *
-FROM menus
+SELECT
+    v.arete,
+    p.fecha_pesaje,
+    p.peso,
+    p.pesaje_id,
+    v.sucursal_id,
+    s.empresa_id,
+    p.estado_id,
+    v.estado_vacuno_id
+FROM
+    vacunos_pesajes p
+INNER JOIN
+    vacunos v ON v.vacuno_id = p.vacuno_id
+INNER JOIN
+    sucursales s ON s.sucursal_id = v.sucursal_id
+ORDER BY
+    p.pesaje_id DESC
+LIMIT 15;

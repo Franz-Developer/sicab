@@ -28,8 +28,6 @@ import { bigintTransformer, decimalTransformer } from '../../../common/utils/typ
 @Check('chk_produccionesleche_totaldescartado_menor', 'total_descartado <= total_litros')
 @Check('chk_produccionesleche_totalneto', 'total_neto >= 0')
 @Check('chk_produccionesleche_totalneto_coherente', 'total_neto = total_litros - total_descartado')
-@Check('chk_produccionesleche_temperatura', 'temperatura_promedio IS NULL OR (temperatura_promedio >= -10 AND temperatura_promedio <= 50)')
-@Check('chk_produccionesleche_densidad', 'densidad_promedio IS NULL OR (densidad_promedio >= 1.0000 AND densidad_promedio <= 1.1000)')
 @Check('chk_produccionesleche_fechaproduccion', 'fecha_produccion <= CURRENT_DATE')
 @Check('chk_produccionesleche_observaciones_notempty', "observaciones IS NULL OR TRIM(observaciones) <> ''")
 export class ProduccionLeche extends BaseAuditEntity {
@@ -54,12 +52,6 @@ export class ProduccionLeche extends BaseAuditEntity {
 
     @Column({ name: 'total_neto', type: 'decimal', precision: 12, scale: 2, transformer: decimalTransformer })
     total_neto!: number;
-
-    @Column({ name: 'temperatura_promedio', type: 'decimal', precision: 5, scale: 2, nullable: true, transformer: decimalTransformer })
-    temperatura_promedio?: number | null;
-
-    @Column({ name: 'densidad_promedio', type: 'decimal', precision: 6, scale: 4, nullable: true, transformer: decimalTransformer })
-    densidad_promedio?: number | null;
 
     @Column({ name: 'observaciones', type: 'varchar', length: 1000, nullable: true })
     observaciones?: string | null;

@@ -3,5 +3,9 @@ import { OmitType, PartialType } from '@nestjs/mapped-types';
 import { CreateTipoCambioDto } from './create-tipo-cambio.dto';
 
 export class UpdateTipoCambioDto extends PartialType(
-    OmitType(CreateTipoCambioDto, ['origen_moneda_id', 'destino_moneda_id'] as const)
+    OmitType(CreateTipoCambioDto, [
+        'origen_moneda_id',
+        'destino_moneda_id',
+        'fecha_cotizacion',
+    ] as const)
 ) {}

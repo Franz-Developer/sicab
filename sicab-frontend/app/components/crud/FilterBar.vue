@@ -1,23 +1,24 @@
 <!-- C:\sistemas\sicab\sicab-frontend\app\components\crud\FilterBar.vue -->
 <template>
     <div class="filter-bar flex flex-wrap items-center gap-2 w-full">
-        <div class="flex-1 min-w-[240px] order-1">
+
+        <div class="w-full lg:flex-1 lg:min-w-[250px]">
             <BaseSearch :autofocus="autofocus" :model-value="filters.global" :placeholder="searchPlaceholder"
                 @update:model-value="filters.global = $event" @search="$emit('search')" class="w-full" />
         </div>
 
-        <div v-if="showExactMatch" class="w-32 flex-shrink-0 order-2">
+        <div v-if="showExactMatch" class="w-full sm:w-auto sm:flex-1 lg:flex-none lg:w-32">
             <BaseExactMatch :model-value="filters.exactMatch" @update:model-value="onExactMatchChange" />
         </div>
 
         <template v-if="hasAdvancedFilters">
-            <div class="flex items-center gap-2 w-full order-3 sm:w-auto">
+            <div class="w-full sm:w-auto flex items-center gap-2 sm:flex-1 lg:flex-none justify-between sm:justify-end">
                 <BaseButton :label="activeFiltersCount > 0 ? `Filtros (${activeFiltersCount})` : 'Filtros'"
                     icon="pi pi-filter" :variant="activeFiltersCount > 0 ? 'sky' : 'cancel'" size="sm"
-                    class="flex-shrink-0" @click="showModal = true" />
+                    class="flex-1 sm:flex-none" @click="showModal = true" />
 
                 <BaseButton v-if="activeFiltersCount > 0" label="Limpiar" icon="pi pi-trash" variant="danger" size="sm"
-                    class="flex-shrink-0" @click="$emit('clear')" />
+                    class="flex-1 sm:flex-none" @click="$emit('clear')" />
             </div>
         </template>
 

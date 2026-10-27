@@ -3,9 +3,11 @@
     <CrudPageLayout icon="pi pi-chart-line" title="Amortizaciones de Vacunos"
         subtitle="Cálculo y registro de la depreciación anual del hato" :show-action="true"
         action-label="CALCULAR AMORTIZACIONES" action-icon="pi pi-calculator" @action="openBulkDialog">
+
         <BaseTable :value="items" :loading="loading" :columns="columns" :totalRecords="totalRecords"
             :rows="lazyParams.rows" :first="lazyParams.first" :sortField="lazyParams.sortField"
             :sortOrder="lazyParams.sortOrder" @page="onPage" @sort="onSort">
+
             <!-- ═══════════ FILTROS ═══════════ -->
             <template #header>
                 <div class="px-3 py-1.5 bg-white">
@@ -14,7 +16,6 @@
                         modal-subtitle="Refina la búsqueda de amortizaciones" @search="onSearch" @clear="limpiarFiltros"
                         @apply="aplicarFiltros">
                         <template #advanced>
-                            <!-- Fila 1: Sucursal y Empresa -->
                             <div class="md:col-span-6">
                                 <label
                                     class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Sucursal</label>
@@ -32,27 +33,28 @@
                                     class="w-full" />
                             </div>
 
-                            <!-- Fila 2: Gestión y Rango de Periodo -->
+                            <div class="md:col-span-12 border-t border-slate-100 pt-2 mt-1"></div>
+
                             <div class="md:col-span-4">
                                 <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Gestión
                                     (Año)</label>
-                                <BaseSelect v-model="filters.gestion_id" :options="gestionOptions" option-label="label"
+                                <BaseSelect v-model="filters.gestion" :options="gestionOptions" option-label="label"
                                     option-value="value" placeholder="Todas las gestiones" size="sm" filter show-clear
                                     appendTo="body" :loading="loadingGestiones" @update:model-value="aplicarFiltros"
                                     class="w-full" />
                             </div>
 
                             <div class="md:col-span-4">
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Periodo
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Gestión
                                     Desde</label>
-                                <BaseInput v-model.number="filters.periodo_desde" type="number" placeholder="Ej: 2024"
+                                <BaseInput v-model.number="filters.gestion_desde" type="number" placeholder="Ej: 2024"
                                     size="sm" @blur="aplicarFiltros" />
                             </div>
 
                             <div class="md:col-span-4">
-                                <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Periodo
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Gestión
                                     Hasta</label>
-                                <BaseInput v-model.number="filters.periodo_hasta" type="number" placeholder="Ej: 2026"
+                                <BaseInput v-model.number="filters.gestion_hasta" type="number" placeholder="Ej: 2026"
                                     size="sm" @blur="aplicarFiltros" />
                             </div>
                         </template>
@@ -75,16 +77,16 @@
                 </div>
             </template>
 
-            <template #body-periodo="{ data }">
-                <span class="cell-primary-normal font-mono">{{ data.periodo }}</span>
+            <template #body-gestion="{ data }">
+                <span class="cell-primary-normal font-mono font-bold text-sky-800">{{ data.gestion }}</span>
             </template>
 
             <template #body-valor_inicial="{ data }">
                 <span class="font-mono">{{ formatCurrency(data.valor_inicial) }}</span>
             </template>
 
-            <template #body-amortizacion_periodo="{ data }">
-                <span class="font-mono text-red-600">{{ formatCurrency(data.amortizacion_periodo) }}</span>
+            <template #body-amortizacion_gestion="{ data }">
+                <span class="font-mono text-red-600">{{ formatCurrency(data.amortizacion_gestion) }}</span>
             </template>
 
             <template #body-valor_libro="{ data }">
@@ -109,13 +111,13 @@
                             <span class="expansion-value">{{ data.vacuno_id }}</span>
                         </div>
                         <div class="expansion-item">
-                            <span class="expansion-label">ID Gestión</span>
-                            <span class="expansion-value">{{ data.gestion_id }}</span>
+                            <span class="expansion-label">Gestión</span>
+                            <span class="expansion-value">{{ data.gestion }}</span>
                         </div>
                         <div class="expansion-item">
                             <span class="expansion-label">Amortización Acumulada</span>
                             <span class="expansion-value font-mono">{{ formatCurrency(data.amortizacion_acumulada)
-                            }}</span>
+                                }}</span>
                         </div>
                         <div class="expansion-item">
                             <span class="expansion-label">Cotización UFV Aplicada</span>
@@ -126,11 +128,10 @@
                             <span class="expansion-label">Valor Libro (UFV)</span>
                             <span class="expansion-value font-mono">{{ data.valor_libro_ufv }}</span>
                         </div>
-                        <div class="expansion-item">
+                        <div class="expansion-item md:col-span-2">
                             <span class="expansion-label">Observaciones</span>
                             <span class="expansion-value">{{ data.observaciones || '—' }}</span>
                         </div>
-                        <!-- Auditoría -->
                         <div class="expansion-item">
                             <span class="expansion-label">Usuario Operación</span>
                             <span class="expansion-value">{{ data.usuario_operacion || '—' }}</span>
@@ -140,7 +141,7 @@
                             <span class="expansion-value">{{ data.fecha_registro || '—' }}</span>
                         </div>
                         <div class="expansion-item">
-                            <span class="expansion-label">Fecha Actualización</span>
+                            <span class="expansion-label">Última Actualización</span>
                             <span class="expansion-value">{{ data.fecha_actualizacion || '—' }}</span>
                         </div>
                     </div>
@@ -180,13 +181,13 @@
                             <div class="info-panel-list !grid !grid-cols-2 !gap-x-4">
                                 <div class="info-panel-item"><i class="pi pi-tag"></i><b>Arete:</b> {{
                                     formObj.vacuno_arete
-                                }}</div>
-                                <div class="info-panel-item"><i class="pi pi-calendar"></i><b>Periodo:</b> {{
-                                    formObj.periodo }}</div>
+                                    }}</div>
+                                <div class="info-panel-item"><i class="pi pi-calendar"></i><b>Gestión:</b> {{
+                                    formObj.gestion }}</div>
                                 <div class="info-panel-item"><i class="pi pi-dollar"></i><b>Valor Inicial:</b> {{
                                     formatCurrency(formObj.valor_inicial) }}</div>
                                 <div class="info-panel-item"><i class="pi pi-arrow-down"></i><b>Amortización:</b> {{
-                                    formatCurrency(formObj.amortizacion_periodo) }}</div>
+                                    formatCurrency(formObj.amortizacion_gestion) }}</div>
                                 <div class="info-panel-item"><i class="pi pi-book"></i><b>Valor Libro:</b> {{
                                     formatCurrency(formObj.valor_libro) }}</div>
                             </div>
@@ -194,9 +195,7 @@
                     </div>
 
                     <div class="md:col-span-12">
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">
-                            Observaciones
-                        </label>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Observaciones</label>
                         <BaseInput ref="observacionesRef" v-model="formObj.observaciones" :maxlength="500" size="sm"
                             placeholder="Añadir una nota o justificación (opcional)" />
                     </div>
@@ -235,9 +234,9 @@
                 <div class="flex flex-col gap-y-4">
                     <div class="md:col-span-6">
                         <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">
-                            Año Fiscal (Periodo) <span class="text-red-500">*</span>
+                            Año Fiscal (Gestión) <span class="text-red-500">*</span>
                         </label>
-                        <BaseSelect ref="anioSelectRef" v-model="bulkForm.anio" :options="anioOptions"
+                        <BaseSelect ref="anioSelectRef" v-model="bulkForm.gestion" :options="anioOptions"
                             option-label="label" option-value="value" placeholder="Seleccionar año..." size="sm" />
                     </div>
                     <div class="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -308,9 +307,9 @@
             vacuno_id: null,
             sucursal_id: null,
             empresa_id: null,
-            gestion_id: null,
-            periodo_desde: null,
-            periodo_hasta: null,
+            gestion: null,
+            gestion_desde: null,
+            gestion_hasta: null,
         },
 
         getExtraFilters: (f: Record<string, any>) => {
@@ -318,9 +317,9 @@
             if (f.vacuno_id) extra.vacuno_id = f.vacuno_id;
             if (f.sucursal_id) extra.sucursal_id = f.sucursal_id;
             if (f.empresa_id) extra.empresa_id = f.empresa_id;
-            if (f.gestion_id) extra.gestion_id = f.gestion_id;
-            if (f.periodo_desde) extra.periodo_desde = f.periodo_desde;
-            if (f.periodo_hasta) extra.periodo_hasta = f.periodo_hasta;
+            if (f.gestion) extra.gestion = f.gestion;
+            if (f.gestion_desde) extra.gestion_desde = f.gestion_desde;
+            if (f.gestion_hasta) extra.gestion_hasta = f.gestion_hasta;
             return extra;
         },
 
@@ -329,9 +328,9 @@
         getCleanForm: () => ({
             amortizacion_vacuno_id: null,
             vacuno_arete: '',
-            periodo: '',
+            gestion: '',
             valor_inicial: 0,
-            amortizacion_periodo: 0,
+            amortizacion_gestion: 0,
             valor_libro: 0,
             observaciones: '',
         }),
@@ -355,7 +354,7 @@
     const bulkDialog = ref(false);
     const bulkLoading = ref(false);
     const bulkForm = ref({
-        anio: null as number | null,
+        gestion: null as number | null,
         recalcular: false,
     });
     const anioOptions = ref<OptionItem[]>([]);
@@ -367,10 +366,9 @@
         loadingSucursales.value = true;
         loadingGestiones.value = true;
         try {
-            const [resEmpresas, resSucursales, resGestiones] = await Promise.all([
+            const [resEmpresas, resSucursales] = await Promise.all([
                 $api('/empresas', { method: 'GET', params: { limit: 1000, sortField: 'empresa', sortOrder: 1, estado_id: ESTADO_ACTIVO } }),
                 $api('/sucursales', { method: 'GET', params: { limit: 1000, sortField: 'sucursal', sortOrder: 1, estado_id: ESTADO_ACTIVO } }),
-                $api('/gestiones', { method: 'GET', params: { limit: 1000, sortField: 'anio', sortOrder: -1 } }),
             ]);
 
             const mapToOptions = (data: any[], labelKey: string, valueKey: string): OptionItem[] =>
@@ -378,7 +376,9 @@
 
             empresaOptions.value = mapToOptions(resEmpresas.data || [], 'empresa', 'empresa_id');
             sucursalOptions.value = mapToOptions(resSucursales.data || [], 'sucursal', 'sucursal_id');
-            gestionOptions.value = mapToOptions(resGestiones.data || [], 'anio', 'gestion_id');
+
+            // Cargar gestiones para el filtro
+            await cargarGestiones();
         } catch (err) {
             console.error('Error al cargar catálogos:', err);
             notify('error', 'Error de carga', 'No se pudieron cargar los datos para los filtros.');
@@ -389,13 +389,35 @@
         }
     };
 
+    const cargarGestiones = async () => {
+        try {
+            const res = await $api('/amortizaciones-vacunos/periodos-disponibles');
+            if (res && res.anios) {
+                gestionOptions.value = res.anios.map((anio: number) => ({
+                    label: `${anio}`,
+                    value: anio
+                }));
+            }
+        } catch (err) {
+            console.error('Error al cargar gestiones:', err);
+        }
+    };
+
     // ============ FUNCIÓN DE CÁLCULO MASIVO (BULK) ============
     const openBulkDialog = async (): Promise<void> => {
         try {
             const res = await $api('/amortizaciones-vacunos/periodos-disponibles');
             if (res.anios && res.anios.length > 0) {
-                anioOptions.value = res.anios.map((anio: number) => ({ label: `${anio}`, value: anio }));
-                bulkForm.value.anio = res.anioActual;
+                const anioActual = new Date().getFullYear();
+                const aniosFiltrados = res.anios.filter((anio: number) => anio !== anioActual);
+
+                if (aniosFiltrados.length > 0) {
+                    anioOptions.value = aniosFiltrados.map((anio: number) => ({ label: `${anio}`, value: anio }));
+                    bulkForm.value.gestion = aniosFiltrados[0];
+                } else {
+                    notify('warn', 'Sin periodos', 'No hay años anteriores para amortizar.');
+                    return;
+                }
             } else {
                 notify('warn', 'Sin periodos', 'No hay periodos disponibles para amortizar.');
                 return;
@@ -420,7 +442,7 @@
     };
 
     const ejecutarBulkAmortizacion = async (): Promise<void> => {
-        if (!bulkForm.value.anio) {
+        if (!bulkForm.value.gestion) {
             notify('warn', 'Campo requerido', 'Debe seleccionar un año fiscal.');
             return;
         }
@@ -430,7 +452,7 @@
             const result: any = await $api('/amortizaciones-vacunos', {
                 method: 'POST',
                 body: {
-                    anio: bulkForm.value.anio,
+                    gestion: bulkForm.value.gestion,
                     recalcular: bulkForm.value.recalcular,
                 },
             });
@@ -443,6 +465,7 @@
             notify('success', 'Cálculo completado', message);
             bulkDialog.value = false;
             onSearch();
+            cargarGestiones(); // Recargar gestiones por si se creó una nueva
         } catch (err: any) {
             const data = err?.data || err?.response?._data || {};
             const msg = data?.message || 'Ocurrió un error al ejecutar el cálculo.';
@@ -486,7 +509,6 @@
     // ============ OVERRIDE edit ============
     const handleEdit = async (item: any): Promise<void> => {
         await edit(item);
-        // Aseguramos que el campo observaciones esté presente
         formObj.value.observaciones = item.observaciones ?? '';
     };
 
@@ -495,9 +517,9 @@
         { expander: true, class: 'w-10', bodyClass: '!text-center' },
         { field: 'vacuno_arete', header: 'VACUNO', sortable: true, template: 'body-vacuno_arete' },
         { field: 'sucursal_nombre', header: 'SUCURSAL / EMPRESA', sortable: true, template: 'body-sucursal_nombre', class: 'w-48' },
-        { field: 'periodo', header: 'PERIODO', sortable: true, template: 'body-periodo', bodyClass: '!text-center', class: 'w-20' },
+        { field: 'gestion', header: 'GESTIÓN', sortable: true, template: 'body-gestion', bodyClass: '!text-center', class: 'w-20' },
         { field: 'valor_inicial', header: 'VALOR INICIAL', sortable: true, template: 'body-valor_inicial', bodyClass: '!text-right', class: 'w-32' },
-        { field: 'amortizacion_periodo', header: 'AMORTIZACIÓN', sortable: true, template: 'body-amortizacion_periodo', bodyClass: '!text-right', class: 'w-32' },
+        { field: 'amortizacion_gestion', header: 'AMORTIZACIÓN', sortable: true, template: 'body-amortizacion_gestion', bodyClass: '!text-right', class: 'w-32' },
         { field: 'valor_libro', header: 'VALOR LIBRO', sortable: true, template: 'body-valor_libro', bodyClass: '!text-right', class: 'w-32' },
         { field: 'estado_registro', header: 'ESTADO', sortable: false, template: 'body-estado', bodyClass: '!text-center', class: 'w-20' },
         { header: 'ACCIONES', template: 'body-acciones', sortable: false, class: '!text-center !w-24' },
@@ -512,8 +534,8 @@
 
     const deleteItemName = computed(() => {
         const arete = formObj.value.vacuno_arete ?? '';
-        const periodo = formObj.value.periodo ?? '';
-        return `Amortización de ${arete} para el año ${periodo}`;
+        const gestion = formObj.value.gestion ?? '';
+        return `Amortización de ${arete} para la gestión ${gestion}`;
     });
 
     // ============ FILTROS AVANZADOS ============
@@ -522,9 +544,9 @@
         if (filters.value.vacuno_id) count++;
         if (filters.value.sucursal_id) count++;
         if (filters.value.empresa_id) count++;
-        if (filters.value.gestion_id) count++;
-        if (filters.value.periodo_desde) count++;
-        if (filters.value.periodo_hasta) count++;
+        if (filters.value.gestion) count++;
+        if (filters.value.gestion_desde) count++;
+        if (filters.value.gestion_hasta) count++;
         return count;
     });
 
@@ -537,9 +559,9 @@
         filters.value.vacuno_id = null;
         filters.value.sucursal_id = null;
         filters.value.empresa_id = null;
-        filters.value.gestion_id = null;
-        filters.value.periodo_desde = null;
-        filters.value.periodo_hasta = null;
+        filters.value.gestion = null;
+        filters.value.gestion_desde = null;
+        filters.value.gestion_hasta = null;
         lazyParams.value.first = 0;
         onSearch();
     };

@@ -55,6 +55,10 @@ Authorization: Bearer {{authToken}}
 GET {{baseUrl_razas}}
 Authorization: Bearer {{authToken}}
 
+### LISTAR
+GET {{baseUrl_razas}}?limit=10&offset=0&sortField=raza_id&sortOrder=-1&exactMatch=0
+Authorization: Bearer {{authToken}}
+
 ### LISTAR POR ESTADO ACTIVOS (1000)
 GET {{baseUrl_razas}}?estado_id=1000
 Authorization: Bearer {{authToken}}

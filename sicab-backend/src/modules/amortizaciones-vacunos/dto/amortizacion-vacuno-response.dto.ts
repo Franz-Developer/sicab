@@ -16,20 +16,27 @@ export class AmortizacionVacunoResponseDto {
     @Expose() empresa_nombre?: string | null;
     @Expose() empresa_codigo?: string | null;
 
-    @Expose() @Transform(toNumber) gestion_id!: number; // ✅ AGREGADO
-    @Expose() @Transform(toNumber) periodo!: number;    // ✅ CORREGIDO (era formatOnlyDate)
+    // ═══ CAMPOS CORREGIDOS SEGÚN EL DDL ═══
+    @Expose() @Transform(toNumber) gestion!: number;
 
     @Expose() @Transform(({ value }) => Number(value)) valor_inicial!: number;
-    @Expose() @Transform(({ value }) => Number(value)) amortizacion_periodo!: number;
+    @Expose() @Transform(({ value }) => Number(value)) valor_residual!: number;
+    @Expose() @Transform(({ value }) => Number(value)) amortizacion_gestion!: number;
     @Expose() @Transform(({ value }) => Number(value)) amortizacion_acumulada!: number;
     @Expose() @Transform(({ value }) => Number(value)) valor_libro!: number;
 
+    // ═══ CAMPOS UFV ═══
     @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) valor_inicial_ufv?: number | null;
-    @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) amortizacion_periodo_ufv?: number | null;
+    @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) valor_residual_ufv?: number | null;
+    @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) amortizacion_gestion_ufv?: number | null;
     @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) amortizacion_acumulada_ufv?: number | null;
     @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) valor_libro_ufv?: number | null;
     @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) cotizacion_ufv_aplicada?: number | null;
     @Expose() @Transform(({ value }) => formatOnlyDate(value)) fecha_cotizacion_ufv?: string | null;
+
+    // ═══ SNAPSHOTS ═══
+    @Expose() @Transform(toNumber) vida_util_anios?: number | null;
+    @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) tasa_amortizacion?: number | null;
 
     @Expose() observaciones?: string | null;
 

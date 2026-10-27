@@ -2,17 +2,41 @@
 <template>
     <CrudPageLayout icon="pi pi-tag" title="Razas" subtitle="Catálogo de razas de ganado" :show-action="permisos.crear"
         action-label="NUEVA RAZA" action-icon="pi pi-plus" @action="openNew">
+
         <BaseTable :value="items" :loading="loading" :columns="columns" :totalRecords="totalRecords"
             :rows="lazyParams.rows" :first="lazyParams.first" :sortField="lazyParams.sortField"
             :sortOrder="lazyParams.sortOrder" @page="onPage" @sort="onSort">
+
             <template #header>
                 <div class="px-3 py-1.5 bg-white">
-                    <FilterBar :filters="filters" search-placeholder="Buscar: raza, código, descripción, origen..."
-                        @search="onSearch" />
+
+                    <div class="filter-bar flex flex-wrap items-center gap-2 w-full">
+                        <!-- 1. Tipo de Semoviente (Primero) -->
+                        <div class="w-full md:w-56 lg:w-64">
+                            <BaseSelect v-model="filters.tipo_semoviente_id" :options="tipoSemovienteFilterOptions"
+                                option-label="label" option-value="value" placeholder="Todos los tipos" size="sm" filter
+                                show-clear appendTo="body" :loading="loadingTipoSemovientes"
+                                @update:model-value="aplicarFiltros" class="w-full"
+                                v-tooltip.top="'Filtrar por tipo de semoviente (Vacuno, Porcino, etc.)'" />
+                        </div>
+
+                        <!-- 2. Buscador (Segundo) -->
+                        <div class="w-full lg:flex-1 lg:min-w-[250px]">
+                            <BaseSearch :model-value="filters.global"
+                                placeholder="Buscar: raza, código, descripción, origen..."
+                                @update:model-value="filters.global = $event" @search="onSearch" class="w-full" />
+                        </div>
+
+                        <!-- 3. Coincidencia (Tercero) -->
+                        <div class="w-full sm:w-auto sm:flex-1 lg:flex-none lg:w-32">
+                            <BaseExactMatch :model-value="filters.exactMatch"
+                                @update:model-value="onExactMatchChange" />
+                        </div>
+                    </div>
+
                 </div>
             </template>
 
-            <!-- ═══════════ COLUMNAS ═══════════ -->
             <template #body-codigo="{ data }">
                 <span class="cell-code">{{ data.codigo }}</span>
             </template>
@@ -45,11 +69,9 @@
                     @toggle="toggleEstado(data)" @delete="confirmDelete(data)" />
             </template>
 
-            <!-- ═══════════ EXPANSIÓN ═══════════ -->
             <template #expansion="{ data }">
                 <div class="expansion-panel">
                     <div class="expansion-with-photo">
-                        <!-- Foto -->
                         <div class="expansion-photo">
                             <img v-if="data.foto" :src="data.foto" :alt="data.raza" @error="onImageError($event)" />
                             <div v-else
@@ -58,7 +80,6 @@
                             </div>
                         </div>
 
-                        <!-- Grid de 2 columnas -->
                         <div class="expansion-grid">
                             <div class="expansion-item">
                                 <span class="expansion-label">Origen:</span>
@@ -87,7 +108,6 @@
         </BaseTable>
     </CrudPageLayout>
 
-    <!-- ═══════════ DIALOG CRUD ═══════════ -->
     <BaseDialog v-model:visible="dialog" dialogClass="" width="w-[95vw] sm:w-[90vw] md:w-[780px]" maxHeight="none"
         :modal="true" :closable="!loading" @show="focusFirstInput"
         :pt="{ content: { class: '!overflow-visible !max-h-none' } }">
@@ -114,7 +134,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-3">
-                    <!-- ⚡ NUEVO SELECT: TIPO DE SEMOVIENTE ⚡ -->
                     <div class="md:col-span-12">
                         <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">
                             Tipo de Semoviente <span class="text-red-500">*</span>
@@ -135,7 +154,6 @@
                         </small>
                     </div>
 
-                    <!-- Raza -->
                     <div class="md:col-span-5">
                         <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">
                             Raza <span class="text-red-500">*</span>
@@ -158,7 +176,6 @@
                         </small>
                     </div>
 
-                    <!-- Código -->
                     <div class="md:col-span-2">
                         <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">
                             Código <span class="text-red-500">*</span>
@@ -181,7 +198,6 @@
                         </small>
                     </div>
 
-                    <!-- Origen -->
                     <div class="md:col-span-5">
                         <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">
                             Origen
@@ -190,7 +206,6 @@
                             placeholder="Ej: BOLIVIA, BRASIL, ARGENTINA" />
                     </div>
 
-                    <!-- Peso Promedio Adulto -->
                     <div class="md:col-span-3">
                         <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">
                             Peso Prom. Adulto (kg)
@@ -204,7 +219,6 @@
                         </small>
                     </div>
 
-                    <!-- Descripción -->
                     <div class="md:col-span-9">
                         <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">
                             Descripción
@@ -215,7 +229,6 @@
                 </div>
             </div>
 
-            <!-- ═══════════ FOTO ═══════════ -->
             <div class="mt-4 panel-contrast">
                 <span class="block text-xs font-black text-blue-700 uppercase tracking-wider mb-3">
                     Fotografía de la Raza
@@ -295,21 +308,20 @@
 
     useHead({ title: 'Razas' });
 
-    // ============ TIPOS AUXILIARES ============
     interface OptionItem {
         label: string;
         value: number;
     }
 
-    // ============ DEPENDENCIAS ============
     const { $rules } = useNuxtApp() as any;
     const { $api } = useNuxtApp() as any;
     const { notify } = useNotify();
     const { validate: validateImage, getConfigDisplay } = useImageValidator();
 
-    // ============ ESTADO PARA CATÁLOGOS (TIPO SEMOVIENTE) ============
     const tipoSemovienteOptions = shallowRef<OptionItem[]>([]);
     const loadingTipoSemovientes = ref(false);
+
+    const tipoSemovienteFilterOptions = computed(() => tipoSemovienteOptions.value);
 
     const cargarTiposSemovientes = async (): Promise<void> => {
         loadingTipoSemovientes.value = true;
@@ -331,7 +343,6 @@
         }
     };
 
-    // ============ CRUD PRINCIPAL (useCrudTable) ============
     const {
         items, loading, totalRecords, filters, lazyParams,
         dialog, deleteDialog, formObj, submitted, touched,
@@ -347,21 +358,26 @@
         rowsDefault: 10,
         autoLoad: false,
 
-        // ⚡ AGREGAMOS tipo_semoviente_id A LOS CAMPOS PROTEGIDOS ⚡
         camposProtegidosPorDependencia: ['tipo_semoviente_id', 'raza', 'codigo'],
 
         defaultFilters: {
             global: '',
             exactMatch: 0,
+            tipo_semoviente_id: null,
         },
 
-        getExtraFilters: (f: Record<string, any>) => ({
-            exactMatch: f.exactMatch ?? 0,
-        }),
+        getExtraFilters: (f: Record<string, any>) => {
+            const extra: Record<string, any> = {
+                exactMatch: f.exactMatch ?? 0,
+            };
+            if (f.tipo_semoviente_id) {
+                extra.tipo_semoviente_id = Number(f.tipo_semoviente_id);
+            }
+            return extra;
+        },
 
         getPrimaryKey: (item: any) => item.raza_id,
 
-        // ⚡ AGREGAMOS tipo_semoviente_id AL FORMULARIO LIMPIO ⚡
         getCleanForm: () => ({
             raza_id: null,
             tipo_semoviente_id: null,
@@ -373,7 +389,6 @@
             foto: null,
         }),
 
-        // ⚡ AGREGAMOS tipo_semoviente_id AL PAYLOAD ⚡
         buildPayload: (form: any) => ({
             tipo_semoviente_id: Number(form.tipo_semoviente_id),
             raza: form.raza?.trim().toUpperCase(),
@@ -383,10 +398,9 @@
             peso_promedio_adulto: form.peso_promedio_adulto ? Number(form.peso_promedio_adulto) : null,
         }),
 
-        validate: () => true,   // validación manual en saveRaza
+        validate: () => true,
     });
 
-    // ============ TÍTULOS DINÁMICOS ============
     const tituloDialog = computed(() =>
         isUpdate.value ? 'EDITAR RAZA' : 'NUEVA RAZA'
     );
@@ -397,7 +411,6 @@
             : 'Registro de nueva raza'
     );
 
-    // ============ ESTADO ADICIONAL (FOTO) ============
     const fotoInput = ref<HTMLInputElement | null>(null);
     const fotoFile = ref<File | null>(null);
     const fotoPreview = ref<string | null>(null);
@@ -446,7 +459,6 @@
 
     const puedeSubirFoto = computed(() => Boolean(fotoConfig.value));
 
-    // ============ FOCUS INICIAL ============
     const tipoSemovienteRef = ref<any>(null);
 
     const focusFirstInput = async (): Promise<void> => {
@@ -461,7 +473,6 @@
         }, 350);
     };
 
-    // ============ OVERRIDE openNew / edit ============
     const openNew = (): void => {
         openNewBase();
         fotoFile.value = null;
@@ -477,7 +488,6 @@
         fotoEliminada.value = false;
         if (fotoInput.value) fotoInput.value.value = '';
 
-        // Normalizar datos
         if (formObj.value.peso_promedio_adulto != null) {
             formObj.value.peso_promedio_adulto = Number(formObj.value.peso_promedio_adulto);
         }
@@ -486,7 +496,6 @@
         }
     };
 
-    // ============ SAVE CON FOTO (FormData) ============
     const saveWithFoto = async (
         payload: Record<string, any>,
         file: File | null,
@@ -516,7 +525,6 @@
     const saveRaza = async (): Promise<void> => {
         submitted.value = true;
 
-        // ─── Validaciones manuales ───
         if (!formObj.value.tipo_semoviente_id) {
             touched.value.tipo_semoviente_id = true;
             notify('warn', 'Campos incompletos', 'Debe seleccionar un tipo de semoviente.');
@@ -610,12 +618,21 @@
         }
     };
 
+    const onExactMatchChange = (value: number): void => {
+        filters.value.exactMatch = value;
+        onSearch();
+    };
+
+    const aplicarFiltros = (): void => {
+        lazyParams.value.first = 0;
+        onSearch();
+    };
+
     const onImageError = (event: Event): void => {
         const img = event.target as HTMLImageElement;
         img.style.display = 'none';
     };
 
-    // ============ COLUMNAS DE LA TABLA ============
     const columns = [
         { expander: true, class: 'w-10', bodyClass: '!text-center' },
         { field: 'codigo', header: 'CÓDIGO', template: 'body-codigo', sortable: true, class: 'w-28', bodyClass: '!text-center' },
@@ -626,7 +643,6 @@
         { header: 'ACCIONES', template: 'body-acciones', sortable: false, class: '!text-center !w-28' },
     ];
 
-    // ============ INIT ============
     onMounted(async () => {
         fotoConfig.value = await getConfigDisplay('foto_raza_config');
         await cargarTiposSemovientes();

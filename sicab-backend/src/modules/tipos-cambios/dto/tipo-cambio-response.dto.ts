@@ -19,8 +19,13 @@ export class TipoCambioResponseDto {
     @Transform(({ obj }) => transformMetadata(obj.destino_moneda_id, TIPO_MONEDA_METADATA))
     destino_moneda!: MetadataTransformResult;
 
-    @Expose() @Transform(({ value }) => Number(value)) factor_compra!: number;
-    @Expose() @Transform(({ value }) => Number(value)) factor_venta!: number;
+    @Expose()
+    @Transform(({ value }) => (value === null || value === undefined) ? null : Number(value))
+    factor_compra!: number | null;
+
+    @Expose()
+    @Transform(({ value }) => Number(value))
+    factor_venta!: number;
 
     @Expose()
     @Transform(({ value }) => formatOnlyDate(value))

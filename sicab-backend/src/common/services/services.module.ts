@@ -10,6 +10,7 @@ import { ConfiguracionService } from './configuracion.service';
 import { GenerarQRUtil } from './generar-qr.service';
 import { ScoringService } from './scoring.service';
 import { NotificacionService } from './notificacion.service';
+import { AreteService } from './arete.service';
 
 @Global()
 @Module({
@@ -24,6 +25,7 @@ import { NotificacionService } from './notificacion.service';
         GenerarQRUtil,
         ScoringService,
         NotificacionService,
+        AreteService,
         {
             provide: 'IDataSource',
             useFactory: (dataSource: DataSource) => new DataSourceAdapter(dataSource),
@@ -39,6 +41,7 @@ import { NotificacionService } from './notificacion.service';
         NotificacionService,
         'IDataSource',
         CacheModule,
+        AreteService,
     ],
 })
 export class ServicesModule {}

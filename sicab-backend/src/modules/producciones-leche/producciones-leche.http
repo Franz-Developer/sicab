@@ -238,25 +238,14 @@ Content-Type: application/json
     "sucursal_id": 2,
     "turno_ordeno_id": 2,
     "fecha_produccion": "2026-10-18",
-    "densidad_promedio": 1.5000,
     "detalles": [{ "vacuno_id": 2, "litros": 10.00 }]
 }
 
-### ❌ ERROR: fecha futura (chk_produccionesleche_fechaproduccion)
-POST {{baseUrl_producciones}}
+###
+GET {{baseUrl_producciones}}?limit=10&offset=0&sortField=produccion_leche_id&sortOrder=-1&exactMatch=0&empresa_id=2&sucursal_id=2
 Authorization: Bearer {{authToken}}
-Content-Type: application/json
 
-{
-    "sucursal_id": 2,
-    "turno_ordeno_id": 2,
-    "fecha_produccion": "2099-12-31",
-    "detalles": [{ "vacuno_id": 2, "litros": 10.00 }]
-}
 
-### ❌ ERROR: sin token (401 Unauthorized)
-GET {{baseUrl_producciones}}
-
-### ❌ ERROR: token inválido (401 Unauthorized)
-GET {{baseUrl_producciones}}
-Authorization: Bearer token_falso_12345
+### 3. OBTENER LOS DETALLES DE UNA PRODUCCIÓN ESPECÍFICA
+GET {{baseUrl_producciones}}/2/detalles?limit=1000
+Authorization: Bearer {{authToken}}

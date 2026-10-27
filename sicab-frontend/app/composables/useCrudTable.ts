@@ -1,5 +1,6 @@
 // C:\sistemas\sicab\sicab-frontend\app\composables\useCrudTable.ts
 import { useCrudService, type FindParams } from '~/services/crud.service';
+import { formatearMensajeError } from '~/constants/nombres-tablas.constant'
 
 export interface UseCrudTableOptions<T> {
     tabla: string;
@@ -273,7 +274,7 @@ export const useCrudTable = <T extends { [k: string]: any }>(opts: UseCrudTableO
         deleteDialog.value = true;
     };
 
-    const deleteItem = async () => {
+        const deleteItem = async () => {
         try {
             deleteDialog.value = false;
             loading.value = true;
@@ -283,7 +284,12 @@ export const useCrudTable = <T extends { [k: string]: any }>(opts: UseCrudTableO
             await load();
         } catch (err: any) {
             const errorData = err?.data;
-            const msg = errorData?.message || 'No se pudo eliminar el registro';
+            let msg = errorData?.message || 'No se pudo eliminar el registro';
+
+            if (Array.isArray(msg)) msg = msg.join(', ');
+
+            const msgAmigable = formatearMensajeError(msg);
+
             let extra = '';
             if (errorData?.detalles) {
                 const motivos = [];
@@ -291,8 +297,8 @@ export const useCrudTable = <T extends { [k: string]: any }>(opts: UseCrudTableO
                 if (errorData.detalles.historicas) motivos.push(`${errorData.detalles.historicas} histórico(s)`);
                 if (motivos.length) extra = `. Dependencias: ${motivos.join(' y ')}.`;
             }
-            notify('error', 'Error al eliminar',
-                `${Array.isArray(msg) ? msg.join(', ') : msg}${extra}`);
+
+            notify('error', 'Error al eliminar', `${msgAmigable}${extra}`);
             console.error(`Error al eliminar ${opts.tabla}:`, err);
         } finally {
             loading.value = false;

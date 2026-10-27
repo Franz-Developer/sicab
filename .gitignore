@@ -82,3 +82,12 @@ Thumbs.db
 # ARCHIVOS SUELTOS EN LA RAÍZ (Tus .bat)
 # ============================================
 *.bat
+
+# ============================================
+# FORZAR SUBIDA DE IMÁGENES Y ARCHIVOS (UPLOADS)
+# ============================================
+# Ignoramos todo lo que esté dentro de uploads por defecto
+sicab-backend/uploads/*
+# Pero hacemos la excepción para que se suban las carpetas y los archivos
+!sicab-backend/uploads/
+!sicab-backend/uploads/**/*

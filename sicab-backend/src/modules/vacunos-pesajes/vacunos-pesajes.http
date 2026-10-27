@@ -1,12 +1,13 @@
 # C:\sistemas\sicab\sicab-backend\src\modules\vacunos-pesajes\vacunos-pesajes.http
-# ----------------------------------------------------------------------
-# DEFINICIÓN DE VARIABLES
-# ----------------------------------------------------------------------
+
 @baseUrl = http://localhost:3010/api
 @baseUrl_pesajes = {{baseUrl}}/vacunos-pesajes
 @rest-client.previewOption = body
 
-### 1. OBTENER TOKEN DE AUTENTICACIÓN.
+@vacunoConPesajesId = 2
+@vacunoSinPesajesId = 3
+
+### 1.1. OBTENER TOKEN
 # @name login
 POST {{baseUrl}}/auth/validar
 Content-Type: application/json
@@ -16,47 +17,93 @@ Content-Type: application/json
     "password": "12345678"
 }
 
-### 2. GUARDAR TOKEN EN VARIABLE.
+### 1.2. GUARDAR TOKEN
 @authToken = {{login.response.body.token}}
 
-### LISTAR PESAJES (Por defecto activos)
+### 2.1. LISTAR PESAJES ACTIVOS
 GET {{baseUrl_pesajes}}?estado_id=1000
 Authorization: Bearer {{authToken}}
 
-### LISTAR PESAJES FILTRADOS POR EMPRESA Y SUCURSAL
+### 2.2. LISTAR PESAJES FILTRADOS
 GET {{baseUrl_pesajes}}?estado_id=1000&empresa_id=2&sucursal_id=2
 Authorization: Bearer {{authToken}}
 
-### LISTAR PESAJES POR RANGO DE FECHAS
-GET {{baseUrl_pesajes}}?fecha_pesaje_desde=2026-09-01&fecha_pesaje_hasta=2026-10-31
+### 2.3. LISTAR PESAJES POR RANGO DE FECHAS
+GET {{baseUrl_pesajes}}?fecha_pesaje_desde=2026-01-01&fecha_pesaje_hasta=2026-12-31
 Authorization: Bearer {{authToken}}
 
-### OBTENER UN PESAJE
+### 2.4. LISTAR PESAJES HISTÓRICOS
+GET {{baseUrl_pesajes}}?estado_id=1002&vacuno_id={{vacunoConPesajesId}}
+Authorization: Bearer {{authToken}}
+
+### 2.5. OBTENER UN PESAJE POR ID
 GET {{baseUrl_pesajes}}/1
 Authorization: Bearer {{authToken}}
 
-### CREAR PESAJE
+### 3.1. CREAR PESAJE VÁLIDO
 POST {{baseUrl_pesajes}}
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-    "vacuno_id": 2,
-    "fecha_pesaje": "2026-10-17",
-    "peso": 590.50,
+    "vacuno_id": {{vacunoConPesajesId}},
+    "fecha_pesaje": "2026-10-25",
+    "peso": 610.50,
     "observaciones": "PESAJE MENSUAL OCTUBRE - CONTROL DE RUTINA"
 }
 
-### ACTUALIZAR PESAJE
+### 3.2. CREAR PESAJE FECHA ANTERIOR AL INGRESO (400)
+POST {{baseUrl_pesajes}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": {{vacunoConPesajesId}},
+    "fecha_pesaje": "2023-01-01",
+    "peso": 500.00,
+    "observaciones": "PRUEBA DE VALIDACIÓN DE FECHA"
+}
+
+### 3.3. CREAR PESAJE FECHA DUPLICADA (409)
+POST {{baseUrl_pesajes}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": {{vacunoConPesajesId}},
+    "fecha_pesaje": "2026-10-25",
+    "peso": 620.00,
+    "observaciones": "PESAJE DUPLICADO PARA PROBAR UNICIDAD"
+}
+
+### 4.1. ACTUALIZAR PESO Y OBSERVACIONES
 PATCH {{baseUrl_pesajes}}/1
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-    "peso": 600.00,
+    "peso": 595.00,
     "observaciones": "PESAJE CORREGIDO - SE VERIFICÓ BALANZA"
 }
 
-### ELIMINAR PESAJE (Borrado lógico)
+### 4.2. ACTUALIZAR FECHA ANTERIOR AL ÚLTIMO REGISTRO (400)
+PATCH {{baseUrl_pesajes}}/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "fecha_pesaje": "2024-01-01"
+}
+
+### 5.1. ELIMINAR PESAJE ACTIVO
 DELETE {{baseUrl_pesajes}}/1
+Authorization: Bearer {{authToken}}
+
+### 5.2. VERIFICAR ESTADO DEL VACUNO
+GET {{baseUrl}}/vacunos/{{vacunoConPesajesId}}
+Authorization: Bearer {{authToken}}
+
+
+###
+GET {{baseUrl_pesajes}}?limit=10&offset=0&sortField=pesaje_id&sortOrder=-1&exactMatch=0&estado_id=1000&empresa_id=2&sucursal_id=2
 Authorization: Bearer {{authToken}}

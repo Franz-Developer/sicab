@@ -62,6 +62,7 @@ export class ProduccionesLecheService extends BaseService {
             }
         ],
         configuracionFiltros: [
+            { nombreCampo: 'fecha_produccion', nombreColumna: 'fecha_produccion', tipoDatoFiltro: 'date', operador: 'eq' },
             { nombreCampo: 'sucursal_id', nombreColumna: 'sucursal_id', tipoDatoFiltro: 'number', operador: 'eq' },
             { nombreCampo: 'turno_ordeno_id', nombreColumna: 'turno_ordeno_id', tipoDatoFiltro: 'number', operador: 'eq' },
             { nombreCampo: 'fecha_produccion_desde', nombreColumna: 'fecha_produccion', tipoDatoFiltro: 'date', operador: 'gte' },
@@ -134,10 +135,6 @@ export class ProduccionesLecheService extends BaseService {
         return Number((Number(totalLitros) - Number(totalDescartado ?? 0)).toFixed(2));
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // CREATE (Cabecera + Detalles)
-    // ═══════════════════════════════════════════════════════════════════════
-
     async create(dto: CreateProduccionLecheDto, usuarioId: number): Promise<ProduccionLecheResponseDto> {
         return runInTransaction(this.dataSource, async (manager) => {
             await this.tablaValidador.validarPermisoTabla(usuarioId, 'producciones_leche', 'crear', manager);
@@ -157,9 +154,24 @@ export class ProduccionesLecheService extends BaseService {
             });
 
             if (produccionExistente) {
+                const fechaCierre = new Date();
+
+                await manager.createQueryBuilder()
+                    .update(ProduccionLecheDetalle)
+                    .set({
+                        estado_id: Estado.HISTORICO,
+                        usuario_id_actualizacion: usuarioId,
+                        fecha_actualizacion: fechaCierre,
+                    })
+                    .where('produccion_leche_id = :id AND estado_id = :estadoActivo', {
+                        id: produccionExistente.produccion_leche_id,
+                        estadoActivo: ESTADO_ACTIVO,
+                    })
+                    .execute();
+
                 produccionExistente.estado_id = Estado.HISTORICO;
                 produccionExistente.usuario_id_actualizacion = usuarioId;
-                produccionExistente.fecha_actualizacion = new Date();
+                produccionExistente.fecha_actualizacion = fechaCierre;
                 await manager.save(produccionExistente);
             }
 
@@ -195,8 +207,6 @@ export class ProduccionesLecheService extends BaseService {
                     total_litros: totalLitros,
                     total_descartado: totalDescartado,
                     total_neto: totalNeto,
-                    temperatura_promedio: dto.temperatura_promedio ?? null,
-                    densidad_promedio: dto.densidad_promedio ?? null,
                     observaciones: dto.observaciones ?? null,
                     usuario_id_registro: Number(usuarioId),
                 });
@@ -292,16 +302,22 @@ export class ProduccionesLecheService extends BaseService {
                 .set({
                     estado_id: Estado.BORRADO,
                     usuario_id_baja: usuarioIdBaja,
-                    fecha_baja: fechaBaja
+                    fecha_baja: fechaBaja,
+                    usuario_id_actualizacion: null,
+                    fecha_actualizacion: null,
                 })
-                .where('produccion_leche_id = :id AND estado_id = :estadoActivo', { id, estadoActivo: ESTADO_ACTIVO })
+                .where('produccion_leche_id = :id AND estado_id IN (:...estados)', {
+                    id,
+                    estados: [Estado.ACTIVO, Estado.HISTORICO],
+                })
                 .execute();
 
             produccion.estado_id = Estado.BORRADO;
             produccion.usuario_id_baja = usuarioIdBaja;
             produccion.fecha_baja = fechaBaja;
             await manager.save(produccion);
-            return produccion as unknown as T;
+
+            return this.findOne<T>(id, usuarioIdBaja, manager);
         });
     }
 }

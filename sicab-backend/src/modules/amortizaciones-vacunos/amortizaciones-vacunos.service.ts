@@ -2,7 +2,7 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
-import { ESTADO_ACTIVO, ESTADO_HISTORICO, EstadoVacuno, TipoMoneda, } from '../../common/constants/estados.constant';
+import { ESTADO_ACTIVO, ESTADO_HISTORICO, EstadoVacuno, TipoMoneda } from '../../common/constants/estados.constant';
 import { DomainException } from '../../common/exceptions/domain.exception';
 import { BaseService, BaseServiceConfig } from '../../common/services/base.service';
 import { runInTransaction } from '../../common/utils/transaction.helper';
@@ -90,9 +90,9 @@ export class AmortizacionesVacunosService extends BaseService {
         ],
         configuracionFiltros: [
             { nombreCampo: 'vacuno_id', nombreColumna: 'vacuno_id', tipoDatoFiltro: 'number', operador: 'eq' },
-            { nombreCampo: 'gestion_id', nombreColumna: 'gestion_id', tipoDatoFiltro: 'number', operador: 'eq' },
-            { nombreCampo: 'periodo_desde', nombreColumna: 'periodo', tipoDatoFiltro: 'number', operador: 'gte' },
-            { nombreCampo: 'periodo_hasta', nombreColumna: 'periodo', tipoDatoFiltro: 'number', operador: 'lte' },
+            { nombreCampo: 'gestion', nombreColumna: 'gestion', tipoDatoFiltro: 'number', operador: 'eq' },
+            { nombreCampo: 'gestion_desde', nombreColumna: 'gestion', tipoDatoFiltro: 'number', operador: 'gte' },
+            { nombreCampo: 'gestion_hasta', nombreColumna: 'gestion', tipoDatoFiltro: 'number', operador: 'lte' },
         ],
         camposFiltroEspecial: [
             {
@@ -130,11 +130,11 @@ export class AmortizacionesVacunosService extends BaseService {
 
     private async calcularAmortizacion(
         vacunoId: number,
-        periodo: number,
+        gestion: number,
         manager: EntityManager,
     ): Promise<{
         valor_inicial: number;
-        amortizacion_periodo: number;
+        amortizacion_gestion: number;
         amortizacion_acumulada: number;
         valor_libro: number;
         valor_adquisicion: number;
@@ -185,12 +185,12 @@ export class AmortizacionesVacunosService extends BaseService {
         }
 
         const prevRows = await manager.query(
-            `SELECT COALESCE(SUM(amortizacion_periodo), 0) AS acumulada_previa
+            `SELECT COALESCE(SUM(amortizacion_gestion), 0) AS acumulada_previa
              FROM amortizaciones_vacunos
              WHERE vacuno_id = $1
-               AND periodo < $2
-               AND estado_id = $3`,
-            [vacunoId, periodo, ESTADO_ACTIVO],
+               AND gestion < $2
+               AND estado_id IN ($3, $4)`,
+            [vacunoId, gestion, ESTADO_ACTIVO, ESTADO_HISTORICO],
         );
 
         const amortizacionAcumuladaPrevia = Number(prevRows?.[0]?.acumulada_previa ?? 0);
@@ -200,17 +200,17 @@ export class AmortizacionesVacunosService extends BaseService {
             0,
         );
 
-        let amortizacionPeriodo = Number(
+        let amortizacionGestion = Number(
             (valorInicial * (tasa / 100)).toFixed(2),
         );
 
-        const valorLibroProyectado = valorInicial - amortizacionPeriodo;
+        const valorLibroProyectado = valorInicial - amortizacionGestion;
         if (valorLibroProyectado < valorResidual) {
-            amortizacionPeriodo = Math.max(0, Number((valorInicial - valorResidual).toFixed(2)));
+            amortizacionGestion = Math.max(0, Number((valorInicial - valorResidual).toFixed(2)));
         }
 
         const amortizacionAcumulada = Number(
-            (amortizacionAcumuladaPrevia + amortizacionPeriodo).toFixed(2),
+            (amortizacionAcumuladaPrevia + amortizacionGestion).toFixed(2),
         );
 
         const valorLibro = Math.max(
@@ -220,7 +220,7 @@ export class AmortizacionesVacunosService extends BaseService {
 
         return {
             valor_inicial: valorInicial,
-            amortizacion_periodo: amortizacionPeriodo,
+            amortizacion_gestion: amortizacionGestion,
             amortizacion_acumulada: amortizacionAcumulada,
             valor_libro: valorLibro,
             valor_adquisicion: valorAdquisicion,
@@ -228,11 +228,10 @@ export class AmortizacionesVacunosService extends BaseService {
         };
     }
 
-    private async procesarPeriodo(
+    private async procesarGestion(
         manager: EntityManager,
         vacuno: VacunoParaAmortizar,
-        gestionId: number,
-        periodo: number,
+        gestion: number,
         usuarioId: number,
         recalcular: boolean,
         cotizacionUfv: number,
@@ -240,21 +239,26 @@ export class AmortizacionesVacunosService extends BaseService {
     ): Promise<ProcesarPeriodoResult> {
         try {
             const activas = await manager.query(
-                `SELECT amortizacion_vacuno_id
+                `SELECT amortizacion_vacuno_id, estado_id
                  FROM amortizaciones_vacunos
                  WHERE vacuno_id = $1
-                   AND periodo = $2
-                   AND estado_id = $3
+                   AND gestion = $2
+                   AND estado_id IN ($3, $4)
                  LIMIT 1`,
-                [vacuno.vacuno_id, periodo, ESTADO_ACTIVO],
+                [vacuno.vacuno_id, gestion, ESTADO_ACTIVO, ESTADO_HISTORICO],
             );
 
             let cerrado = false;
 
             if (activas?.[0]) {
+                if (activas[0].estado_id === ESTADO_HISTORICO) {
+                    return { insertado: false, cerrado: false, omitido: true, error: 'Gestión histórica (1002) no modificable.' };
+                }
+
                 if (!recalcular) {
                     return { insertado: false, cerrado: false, omitido: true };
                 }
+
                 await manager.query(
                     `UPDATE amortizaciones_vacunos
                      SET estado_id = 1002,
@@ -270,30 +274,40 @@ export class AmortizacionesVacunosService extends BaseService {
 
             const calculo = await this.calcularAmortizacion(
                 vacuno.vacuno_id,
-                periodo,
+                gestion,
                 manager,
             );
 
             const valorInicialUfv = Number((calculo.valor_inicial / cotizacionUfv).toFixed(4));
-            const amortPeriodoUfv = Number((calculo.amortizacion_periodo / cotizacionUfv).toFixed(4));
+            const amortGestionUfv = Number((calculo.amortizacion_gestion / cotizacionUfv).toFixed(4));
             const amortAcumuladaUfv = Number((calculo.amortizacion_acumulada / cotizacionUfv).toFixed(4));
-            const valorLibroUfv = Number((valorInicialUfv - amortPeriodoUfv).toFixed(4));
+            const valorLibroUfv = Number((valorInicialUfv - amortGestionUfv).toFixed(4));
 
             await manager.query(
                 `INSERT INTO amortizaciones_vacunos
-                    (vacuno_id, gestion_id, periodo,
-                     valor_inicial, amortizacion_periodo, amortizacion_acumulada, valor_libro,
-                     valor_inicial_ufv, amortizacion_periodo_ufv, amortizacion_acumulada_ufv, valor_libro_ufv,
-                     cotizacion_ufv_aplicada, fecha_cotizacion_ufv,
+                    (vacuno_id, gestion,
+                     valor_inicial, valor_residual, amortizacion_gestion, amortizacion_acumulada, valor_libro,
+                     valor_inicial_ufv, valor_residual_ufv, amortizacion_gestion_ufv, amortizacion_acumulada_ufv, valor_libro_ufv,
+                     cotizacion_ufv_aplicada, fecha_cotizacion_ufv, vida_util_anios, tasa_amortizacion,
                      estado_id, usuario_id_registro)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
                 [
-                    vacuno.vacuno_id, gestionId, periodo,
-                    calculo.valor_inicial, calculo.amortizacion_periodo,
+                    vacuno.vacuno_id, gestion,
+                    calculo.valor_inicial, vacuno.valor_residual, calculo.amortizacion_gestion,
                     calculo.amortizacion_acumulada, calculo.valor_libro,
-                    valorInicialUfv, amortPeriodoUfv, amortAcumuladaUfv, valorLibroUfv,
-                    cotizacionUfv, fechaCotizacionUfv, ESTADO_ACTIVO, usuarioId,
+                    valorInicialUfv, Number((Number(vacuno.valor_residual) / cotizacionUfv).toFixed(4)), amortGestionUfv, amortAcumuladaUfv, valorLibroUfv,
+                    cotizacionUfv, fechaCotizacionUfv, 7, calculo.tasa_amortizacion,
+                    ESTADO_ACTIVO, usuarioId,
                 ],
+            );
+
+            await manager.query(
+                `UPDATE vacunos
+                 SET amortizacion_acumulada = $1,
+                     valor_libro_actual = $2,
+                     fecha_ultima_amortizacion = CURRENT_DATE
+                 WHERE vacuno_id = $3`,
+                [calculo.amortizacion_acumulada, calculo.valor_libro, vacuno.vacuno_id]
             );
 
             return { insertado: true, cerrado, omitido: false };
@@ -306,36 +320,13 @@ export class AmortizacionesVacunosService extends BaseService {
         dto: CreateAmortizacionVacunoDto,
         usuarioId: number,
     ): Promise<BulkAmortizarResult> {
-        const periodo = dto.anio;
+        const gestion = dto.gestion;
 
         return runInTransaction(this.dataSource, async (manager) => {
             await this.tablaValidador.validarPermisoTabla(usuarioId, this.nombreTabla, 'crear', manager);
             await this.tablaValidador.validarRegistrosActivos('usuarios', 'usuario_id', usuarioId, undefined, manager);
 
-            const gestionRows = await manager.query(
-                `SELECT gestion_id, anio FROM gestiones
-                WHERE anio = $1 AND estado_id = $2
-                LIMIT 1`,
-                [periodo, ESTADO_ACTIVO],
-            );
-
-            if (!gestionRows?.[0]) {
-                throw new DomainException(
-                    `No existe una gestión ACTIVA para el año ${periodo}. ` +
-                    `Debe crear o reactivar la gestión antes de amortizar.`,
-                    { httpStatus: HttpStatus.CONFLICT },
-                );
-            }
-
-            const gestionId = Number(gestionRows[0].gestion_id);
-            const fechaUfvBuscada = `${periodo}-01-01`;
-
-            const paramsUfv = [
-                TipoMoneda.BOLIVIANO,
-                TipoMoneda.UFV,
-                [ESTADO_ACTIVO, ESTADO_HISTORICO],
-                fechaUfvBuscada,
-            ];
+            const fechaUfvBuscada = `${gestion}-01-01`;
 
             const ufvRows = await manager.query(
                 `SELECT factor_compra AS valor, fecha_cotizacion
@@ -345,12 +336,12 @@ export class AmortizacionesVacunosService extends BaseService {
                 AND estado_id = ANY($3::int[])
                 AND fecha_cotizacion = $4
                 LIMIT 1`,
-                paramsUfv,
+                [TipoMoneda.BOLIVIANO, TipoMoneda.UFV, [ESTADO_ACTIVO, ESTADO_HISTORICO], fechaUfvBuscada],
             );
 
             if (!ufvRows?.[0]) {
                 throw new DomainException(
-                    `No hay cotización UFV oficial para el inicio del periodo ${periodo} (${fechaUfvBuscada}). ` +
+                    `No hay cotización UFV oficial para el inicio del periodo ${gestion} (${fechaUfvBuscada}). ` +
                     `Cargue primero la UFV en tipos_cambios antes de amortizar.`,
                     { httpStatus: HttpStatus.BAD_REQUEST },
                 );
@@ -371,11 +362,11 @@ export class AmortizacionesVacunosService extends BaseService {
                 ORDER BY v.vacuno_id`,
                 [
                     ESTADO_ACTIVO,
-                    `${periodo}-12-31`,
+                    `${gestion}-12-31`,
                     EstadoVacuno.ACTIVO,
-                    EstadoVacuno.EN_TRATAMIENTO,
+                  /*  EstadoVacuno.EN_TRATAMIENTO,
                     EstadoVacuno.SECA,
-                    EstadoVacuno.DESCARTE
+                    EstadoVacuno.DESCARTE*/
                 ],
             );
 
@@ -386,8 +377,8 @@ export class AmortizacionesVacunosService extends BaseService {
             const errores: Array<{ vacuno_id: number; arete: string; error: string }> = [];
 
             for (const v of vacunos) {
-                const r = await this.procesarPeriodo(
-                    manager, v, gestionId, periodo, usuarioId, dto.recalcular,
+                const r = await this.procesarGestion(
+                    manager, v, gestion, usuarioId, dto.recalcular,
                     cotizacionUfv, fechaCotizacionUfv,
                 );
                 if (r.error) {
@@ -400,7 +391,7 @@ export class AmortizacionesVacunosService extends BaseService {
             }
 
             this.logger.log(
-                `Bulk amortización Año ${periodo} (Gestion ID ${gestionId}): ` +
+                `Bulk amortización Año ${gestion}: ` +
                 `total=${totalVacunos}, insertados=${insertados}, cerrados=${cerrados}, ` +
                 `omitidos=${omitidos}, errores=${errores.length}`,
             );
@@ -412,7 +403,7 @@ export class AmortizacionesVacunosService extends BaseService {
                     .join(' | ');
 
                 throw new DomainException(
-                    `El proceso de amortización del año ${periodo} falló en ${errores.length} de ${totalVacunos} vacunos. ` +
+                    `El proceso de amortización del año ${gestion} falló en ${errores.length} de ${totalVacunos} vacunos. ` +
                     `No se guardó ningún registro. Detalles: ${detalle}`,
                     {
                         httpStatus: HttpStatus.CONFLICT,
@@ -428,15 +419,7 @@ export class AmortizacionesVacunosService extends BaseService {
     async getPeriodosDisponibles(usuarioId: number): Promise<PeriodosDisponibles> {
         await this.tablaValidador.validarPermisoTabla(usuarioId, this.nombreTabla, 'leer');
 
-        const gestionActivaRows = await this.dataSource.query(
-            `SELECT anio
-             FROM gestiones
-             WHERE estado_id = $1
-             LIMIT 1`,
-            [ESTADO_ACTIVO]
-        );
-
-        const anioActual = gestionActivaRows?.[0]?.anio ? Number(gestionActivaRows[0].anio) : new Date().getFullYear();
+        const anioActual = new Date().getFullYear();
 
         const aniosRows = await this.dataSource.query(
             `SELECT DISTINCT EXTRACT(YEAR FROM fecha_inicio_amortizacion)::int AS anio
@@ -449,9 +432,9 @@ export class AmortizacionesVacunosService extends BaseService {
             [
                 ESTADO_ACTIVO,
                 EstadoVacuno.ACTIVO,
-                EstadoVacuno.EN_TRATAMIENTO,
+                /*EstadoVacuno.EN_TRATAMIENTO,
                 EstadoVacuno.SECA,
-                EstadoVacuno.DESCARTE
+                EstadoVacuno.DESCARTE*/
             ],
         );
 
@@ -485,7 +468,7 @@ export class AmortizacionesVacunosService extends BaseService {
             });
 
             if (!actual) {
-                throw new DomainException('Amortización no encontrada.', { httpStatus: HttpStatus.NOT_FOUND });
+                throw new DomainException('Amortización no encontrada o inactiva.', { httpStatus: HttpStatus.NOT_FOUND });
             }
 
             manager.merge(AmortizacionVacuno, actual, dto);
@@ -506,7 +489,7 @@ export class AmortizacionesVacunosService extends BaseService {
     override async remove<T>(id: number, usuarioId: number): Promise<T> {
         return runInTransaction(this.dataSource, async (manager) => {
             const reg = await manager.query(
-                `SELECT vacuno_id, periodo
+                `SELECT vacuno_id, gestion
                  FROM amortizaciones_vacunos
                  WHERE amortizacion_vacuno_id = $1
                    AND estado_id = $2
@@ -525,14 +508,14 @@ export class AmortizacionesVacunosService extends BaseService {
                 `SELECT COUNT(*) AS total
                  FROM amortizaciones_vacunos
                  WHERE vacuno_id = $1
-                   AND periodo > $2
+                   AND gestion > $2
                    AND estado_id = $3`,
-                [reg[0].vacuno_id, reg[0].periodo, ESTADO_ACTIVO],
+                [reg[0].vacuno_id, reg[0].gestion, ESTADO_ACTIVO],
             );
 
             if (Number(posteriores[0]?.total) > 0) {
                 throw new DomainException(
-                    `No se puede eliminar la amortización del año ${reg[0].periodo} porque hay amortizaciones ACTIVAS en años posteriores del mismo vacuno. ` +
+                    `No se puede eliminar la amortización del año ${reg[0].gestion} porque hay amortizaciones ACTIVAS en años posteriores del mismo vacuno. ` +
                     `Elimine primero los periodos posteriores o recalcúlelos.`,
                     { httpStatus: HttpStatus.CONFLICT },
                 );

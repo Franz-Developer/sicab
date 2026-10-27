@@ -174,6 +174,42 @@ export class CategoriasVacunoService extends BaseService {
 
             await Promise.all(validaciones);
 
+            const cambiaSexo = dtoProcesado.sexo_biologico_permitido_id !== undefined &&
+                               dtoProcesado.sexo_biologico_permitido_id !== categoriaActual.sexo_biologico_permitido_id;
+
+            const cambiaProductor = dtoProcesado.es_productor_leche !== undefined &&
+                                    dtoProcesado.es_productor_leche !== categoriaActual.es_productor_leche;
+
+            if (cambiaSexo || cambiaProductor) {
+                const nuevoSexo = dtoProcesado.sexo_biologico_permitido_id ?? categoriaActual.sexo_biologico_permitido_id;
+                const nuevoProductor = dtoProcesado.es_productor_leche ?? categoriaActual.es_productor_leche;
+
+                const whereCondicion: any = {
+                    categoria_vacuno_id: id,
+                    estado_id: ESTADO_ACTIVO
+                };
+
+                if (nuevoSexo === SexoBiologico.MACHO) {
+                    whereCondicion.sexo_biologico_id = SexoBiologico.HEMBRA;
+                }
+
+                if (nuevoProductor === CondicionProductorLeche.NO_PRODUCTOR) {
+                    whereCondicion.es_productor_leche = CondicionProductorLeche.PRODUCTOR;
+                }
+
+                const vacunoConflictivo = await manager.findOne('vacunos', {
+                    where: whereCondicion,
+                    select: ['vacuno_id']
+                });
+
+                if (vacunoConflictivo) {
+                    throw new DomainException(
+                        'No se puede cambiar el sexo o la condición de productor de la categoría porque tiene vacunos activos asignados que quedarían inconsistentes con la nueva configuración.',
+                        { httpStatus: HttpStatus.CONFLICT }
+                    );
+                }
+            }
+
             manager.merge(CategoriaVacuno, categoriaActual, dtoProcesado);
             categoriaActual.marcarActualizacion(usuarioId);
 

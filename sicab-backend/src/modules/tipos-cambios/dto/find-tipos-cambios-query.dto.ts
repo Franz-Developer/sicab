@@ -51,6 +51,12 @@ export class FindTiposCambiosQueryDto extends BasePaginationQueryDto {
     @IsDateString({}, { message: 'fecha_hasta debe ser una fecha válida (YYYY-MM-DD).' })
     fecha_hasta?: string;
 
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt({ message: 'La gestión debe ser un número entero.' })
+    @Min(1900, { message: 'La gestión debe ser mayor o igual a 1900.' })
+    gestion?: number;
+
     static getCampos(): string[] {
         const alias = 't';
         return [
@@ -71,7 +77,7 @@ export class FindTiposCambiosQueryDto extends BasePaginationQueryDto {
     }
 
     static getCamposParaQ(): string[] {
-        return []; // No hay campos de texto para buscar en q
+        return [];
     }
 
     static getCamposPermitidosParaOrdenar(): string[] {

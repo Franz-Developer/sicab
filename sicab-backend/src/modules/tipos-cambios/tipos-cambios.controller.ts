@@ -12,7 +12,10 @@ import { CreateTipoCambioDto } from './dto/create-tipo-cambio.dto';
 import { FindTiposCambiosQueryDto } from './dto/find-tipos-cambios-query.dto';
 import { TipoCambioResponseDto } from './dto/tipo-cambio-response.dto';
 import { UpdateTipoCambioDto } from './dto/update-tipo-cambio.dto';
-import { TiposCambiosService } from './tipos-cambios.service';
+import { TiposCambiosService, GestionesDisponiblesResult, ValoresInicialesResult } from './tipos-cambios.service';
+import { UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ImportarExcelResponseDto } from './dto/importar-excel-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('tipos-cambios')
@@ -41,6 +44,24 @@ export class TiposCambiosController {
         return this.tiposCambiosService.findAll(query, user.usuario_id);
     }
 
+    @Get('gestiones')
+    @FindAllRateLimit()
+    @Cache('tipos_cambios', CACHE_BASE)
+    obtenerGestiones(
+        @GetUser() user: AuthenticatedUser,
+    ): Promise<GestionesDisponiblesResult> {
+        return this.tiposCambiosService.obtenerGestionesDisponibles(user.usuario_id);
+    }
+
+    @Get('valores-iniciales')
+    @FindAllRateLimit()
+    @Cache('tipos_cambios', CACHE_BASE)
+    obtenerValoresIniciales(
+        @GetUser() user: AuthenticatedUser,
+    ): Promise<ValoresInicialesResult> {
+        return this.tiposCambiosService.obtenerValoresIniciales(user.usuario_id);
+    }
+
     @Get(':id')
     @FindOneRateLimit()
     @Cache('tipos_cambios', CACHE_BASE)
@@ -62,6 +83,21 @@ export class TiposCambiosController {
         return this.tiposCambiosService.update(id, dto, user.usuario_id);
     }
 
+    @Delete('borrar-gestion/:gestion')
+    @DeleteRateLimit()
+    @InvalidateCache('tipos_cambios')
+    borrarGestion(
+        @Param('gestion', ParseIntPipe) gestion: number,
+        @GetUser() user: AuthenticatedUser,
+    ): Promise<{
+        total: number;
+        borradas: number;
+        reactivadas: number;
+        omitidasPorUso: number;
+    }> {
+        return this.tiposCambiosService.borrarGestion(gestion, user.usuario_id);
+    }
+
     @Delete(':id')
     @DeleteRateLimit()
     @InvalidateCache('tipos_cambios')
@@ -70,5 +106,19 @@ export class TiposCambiosController {
         @GetUser() user: AuthenticatedUser
     ): Promise<TipoCambioResponseDto> {
         return this.tiposCambiosService.remove(id, user.usuario_id);
+    }
+
+    @Post('importar-excel')
+    @UseInterceptors(FileInterceptor('file'))
+    @CreateRateLimit()
+    @InvalidateCache('tipos_cambios')
+    async importarExcel(
+        @UploadedFile() file: Express.Multer.File,
+        @GetUser() user: AuthenticatedUser,
+    ): Promise<ImportarExcelResponseDto> {
+        if (!file) {
+            throw new BadRequestException('No se envió ningún archivo.');
+        }
+        return this.tiposCambiosService.importarDesdeExcel(file, user.usuario_id);
     }
 }

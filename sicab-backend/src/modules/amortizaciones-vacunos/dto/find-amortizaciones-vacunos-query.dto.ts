@@ -51,23 +51,23 @@ export class FindAmortizacionesVacunosQueryDto extends BasePaginationQueryDto {
 
     @IsOptional()
     @Type(() => Number)
-    @IsInt({ message: 'El campo gestion_id debe ser un número entero.' })
-    @Min(1, { message: 'El campo gestion_id debe ser mayor a 0.' })
-    gestion_id?: number;
+    @IsInt({ message: 'El campo gestion debe ser un número entero.' })
+    @Min(2023, { message: 'El campo gestion debe ser mayor o igual a 2023.' })
+    gestion?: number;
 
     @IsOptional()
     @Type(() => Number)
-    @IsInt({ message: 'periodo_desde debe ser un número entero.' })
-    @Min(1900, { message: 'periodo_desde debe ser mayor o igual a 1900.' })
-    @Max(2100, { message: 'periodo_desde debe ser menor o igual a 2100.' })
-    periodo_desde?: number;
+    @IsInt({ message: 'gestion_desde debe ser un número entero.' })
+    @Min(2023, { message: 'gestion_desde debe ser mayor o igual a 2023.' })
+    @Max(2100, { message: 'gestion_desde debe ser menor o igual a 2100.' })
+    gestion_desde?: number;
 
     @IsOptional()
     @Type(() => Number)
-    @IsInt({ message: 'periodo_hasta debe ser un número entero.' })
-    @Min(1900, { message: 'periodo_hasta debe ser mayor o igual a 1900.' })
-    @Max(2100, { message: 'periodo_hasta debe ser menor o igual a 2100.' })
-    periodo_hasta?: number;
+    @IsInt({ message: 'gestion_hasta debe ser un número entero.' })
+    @Min(2023, { message: 'gestion_hasta debe ser mayor o igual a 2023.' })
+    @Max(2100, { message: 'gestion_hasta debe ser menor o igual a 2100.' })
+    gestion_hasta?: number;
 
     static getCampos(): string[] {
         const alias = 't';
@@ -86,18 +86,21 @@ export class FindAmortizacionesVacunosQueryDto extends BasePaginationQueryDto {
             `${aliasSucursal}.empresa_id`,
             `${aliasEmpresa}.empresa AS empresa_nombre`,
             `${aliasEmpresa}.codigo AS empresa_codigo`,
-            `${alias}.gestion_id`,
-            `${alias}.periodo`,
+            `${alias}.gestion`,
             `${alias}.valor_inicial`,
-            `${alias}.amortizacion_periodo`,
+            `${alias}.valor_residual`,
+            `${alias}.amortizacion_gestion`,
             `${alias}.amortizacion_acumulada`,
             `${alias}.valor_libro`,
             `${alias}.valor_inicial_ufv`,
-            `${alias}.amortizacion_periodo_ufv`,
+            `${alias}.valor_residual_ufv`,
+            `${alias}.amortizacion_gestion_ufv`,
             `${alias}.amortizacion_acumulada_ufv`,
             `${alias}.valor_libro_ufv`,
             `${alias}.cotizacion_ufv_aplicada`,
             `${alias}.fecha_cotizacion_ufv`,
+            `${alias}.vida_util_anios`,
+            `${alias}.tasa_amortizacion`,
             `${alias}.observaciones`,
             `${alias}.estado_id`,
             `${alias}.usuario_id_registro`,
@@ -132,10 +135,9 @@ export class FindAmortizacionesVacunosQueryDto extends BasePaginationQueryDto {
             'sucursal_codigo',
             'empresa_nombre',
             'empresa_codigo',
-            'gestion_id',
-            'periodo',
+            'gestion',
             'valor_inicial',
-            'amortizacion_periodo',
+            'amortizacion_gestion',
             'amortizacion_acumulada',
             'valor_libro'
         ];
@@ -146,7 +148,7 @@ export class FindAmortizacionesVacunosQueryDto extends BasePaginationQueryDto {
     }
 
     static getCamposProtegidosConDependencias(): string[] {
-        return ['vacuno_id', 'periodo'];
+        return ['vacuno_id', 'gestion'];
     }
 
     static getEquivalenciasMapeo(): Record<string, string> {
@@ -166,18 +168,21 @@ export class FindAmortizacionesVacunosQueryDto extends BasePaginationQueryDto {
             'empresa_id': `${aliasSucursal}.empresa_id`,
             'empresa_nombre': `${aliasEmpresa}.empresa`,
             'empresa_codigo': `${aliasEmpresa}.codigo`,
-            'gestion_id': `${alias}.gestion_id`,
-            'periodo': `${alias}.periodo`,
+            'gestion': `${alias}.gestion`,
             'valor_inicial': `${alias}.valor_inicial`,
-            'amortizacion_periodo': `${alias}.amortizacion_periodo`,
+            'valor_residual': `${alias}.valor_residual`,
+            'amortizacion_gestion': `${alias}.amortizacion_gestion`,
             'amortizacion_acumulada': `${alias}.amortizacion_acumulada`,
             'valor_libro': `${alias}.valor_libro`,
             'valor_inicial_ufv': `${alias}.valor_inicial_ufv`,
-            'amortizacion_periodo_ufv': `${alias}.amortizacion_periodo_ufv`,
+            'valor_residual_ufv': `${alias}.valor_residual_ufv`,
+            'amortizacion_gestion_ufv': `${alias}.amortizacion_gestion_ufv`,
             'amortizacion_acumulada_ufv': `${alias}.amortizacion_acumulada_ufv`,
             'valor_libro_ufv': `${alias}.valor_libro_ufv`,
             'cotizacion_ufv_aplicada': `${alias}.cotizacion_ufv_aplicada`,
             'fecha_cotizacion_ufv': `${alias}.fecha_cotizacion_ufv`,
+            'vida_util_anios': `${alias}.vida_util_anios`,
+            'tasa_amortizacion': `${alias}.tasa_amortizacion`,
             'observaciones': `${alias}.observaciones`,
             'estado_id': `${alias}.estado_id`,
             'usuario_id_registro': `${alias}.usuario_id_registro`,

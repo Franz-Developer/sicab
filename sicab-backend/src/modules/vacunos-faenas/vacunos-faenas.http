@@ -1,0 +1,146 @@
+# C:\sistemas\sicab\sicab-backend\src\modules\vacunos-faenas\vacunos-faenas.http
+# ----------------------------------------------------------------------
+# DEFINICIÓN DE VARIABLES
+# ----------------------------------------------------------------------
+@baseUrl = http://localhost:3010/api
+@baseUrl_faenas = {{baseUrl}}/vacunos-faenas
+@baseUrl_vacunos = {{baseUrl}}/vacunos
+@rest-client.previewOption = body
+
+### 1. OBTENER TOKEN DE AUTENTICACIÓN.
+# @name login
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "ADMIN",
+    "password": "12345678"
+}
+
+### 2. GUARDAR TOKEN EN VARIABLE.
+@authToken = {{login.response.body.token}}
+
+# ==============================================================================
+# LISTADOS Y CONSULTAS DE FAENAS
+# ==============================================================================
+
+### LISTAR TODAS LAS FAENAS (Activas e Históricas)
+GET {{baseUrl_faenas}}
+Authorization: Bearer {{authToken}}
+
+### LISTAR FAENAS ACTIVAS
+GET {{baseUrl_faenas}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### LISTAR FAENAS HISTÓRICAS (Auditoría)
+GET {{baseUrl_faenas}}?estado_id=1002
+Authorization: Bearer {{authToken}}
+
+### OBTENER UNA FAENA POR ID
+GET {{baseUrl_faenas}}/1
+Authorization: Bearer {{authToken}}
+
+### BUSCAR FAENA POR ARETE O NOMBRE (Filtro q)
+GET {{baseUrl_faenas}}?estado_id=1000&q=HOLSTEIN&exactMatch=0
+Authorization: Bearer {{authToken}}
+
+### BUSCAR FAENA POR VACUNO ID ESPECÍFICO
+GET {{baseUrl_faenas}}?estado_id=1000&vacuno_id=43
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR RANGO DE FECHAS DE FAENA
+GET {{baseUrl_faenas}}?estado_id=1000&fecha_faena_desde=2026-01-01&fecha_faena_hasta=2026-12-31
+Authorization: Bearer {{authToken}}
+
+### PAGINACIÓN Y ORDENAMIENTO (Por fecha descendente)
+GET {{baseUrl_faenas}}?limit=10&offset=0&sortField=fecha_faena&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# CRUD DE FAENAS
+# ==============================================================================
+
+### CREAR FAENA (Vacuno debe estar en estado 6401 - PARA_FAENA)
+# El backend calculará el rendimiento_canal automáticamente si no se envía.
+POST {{baseUrl_faenas}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 43,
+    "fecha_faena": "2026-10-26",
+    "peso_vivo_faena": 490.00,
+    "peso_canal_caliente": 264.60,
+    "peso_canal_fria": 254.00,
+    "matadero": "MATADERO MONTERO",
+    "numero_guia": "GM-2026-0001",
+    "observaciones": "FAENA DE PRUEBA PROGRAMADA"
+}
+
+### CREAR FAENA (Calculando rendimiento automático desde el servicio)
+POST {{baseUrl_faenas}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 44,
+    "fecha_faena": "2026-10-27",
+    "peso_vivo_faena": 510.00,
+    "peso_canal_caliente": 275.40,
+    "matadero": "MATADERO MONTERO",
+    "numero_guia": "GM-2026-0002"
+}
+
+### ACTUALIZAR FAENA (Solo pesos, matadero, guía u observaciones)
+# No se puede cambiar el vacuno_id ni la fecha_faena (evento irreversible).
+PATCH {{baseUrl_faenas}}/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "peso_canal_fria": 250.50,
+    "observaciones": "PESAJE EN FRÍO CORREGIDO POR BALANZA"
+}
+
+# ==============================================================================
+# CASOS DE ERROR ESPERADOS (Para probar validaciones)
+# ==============================================================================
+
+### ❌ ERROR: Registrar faena de un vacuno que NO ESTÁ en PARA_FAENA (6401)
+# Debería lanzar 400 Bad Request.
+# Asegúrate de usar un vacuno que esté ACTIVO (6400), VENDIDO (6404) o MUERTO (6405).
+POST {{baseUrl_faenas}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 2,
+    "fecha_faena": "2026-10-26",
+    "peso_vivo_faena": 850.00,
+    "peso_canal_caliente": 450.00
+}
+
+### ❌ ERROR: Registrar dos veces la faena del mismo vacuno
+# Debería lanzar 409 Conflict (R.1 - Solo existe una faena por vacuno en toda su vida).
+POST {{baseUrl_faenas}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 43,
+    "fecha_faena": "2026-10-28",
+    "peso_vivo_faena": 490.00,
+    "peso_canal_caliente": 264.60
+}
+
+### ❌ ERROR: Peso de canal caliente mayor al peso vivo
+POST {{baseUrl_faenas}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "vacuno_id": 45,
+    "fecha_faena": "2026-10-26",
+    "peso_vivo_faena": 480.00,
+    "peso_canal_caliente": 500.00
+}

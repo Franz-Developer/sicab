@@ -7235,12 +7235,12 @@ export const CONDICION_PRODUCTOR_LECHE_METADATA: Record<number, ConstanteMetadat
 // ==========================================
 // ESTADO VACUNO
 export enum EstadoVacuno {
-    ACTIVO          = 6400,
-    EN_TRATAMIENTO  = 6401,
-    SECA            = 6402,
-    DESCARTE        = 6403,
-    VENDIDO         = 6404,
-    MUERTO          = 6405,
+    ACTIVO      = 6400,
+    PARA_FAENA  = 6401,
+    FAENADO     = 6402,
+    PARA_VENTA  = 6403,
+    VENDIDO     = 6404,
+    MUERTO      = 6405,
 }
 
 export const ESTADO_VACUNO_METADATA: Record<number, ConstanteMetadata & { label: string; es_defecto?: boolean }> = {
@@ -7253,29 +7253,29 @@ export const ESTADO_VACUNO_METADATA: Record<number, ConstanteMetadata & { label:
         descripcion: 'Vacuno operativo en el hato. Estado por defecto al registrar un animal. CONSTANTE POR DEFECTO.',
         es_defecto: true,
     },
-    [EstadoVacuno.EN_TRATAMIENTO]: {
-        id: EstadoVacuno.EN_TRATAMIENTO,
-        abreviatura: 'EN_TRATAMIENTO',
-        label: 'En Tratamiento',
+    [EstadoVacuno.PARA_FAENA]: {
+        id: EstadoVacuno.PARA_FAENA,
+        abreviatura: 'PARA_FAENA',
+        label: 'Para Faena',
         prefijo: null,
         valor: 2,
-        descripcion: 'Vacuno bajo tratamiento veterinario. Su leche puede requerir descarte (antibióticos). No puede registrarse en producciones_leche_detalle mientras esté en este estado.',
+        descripcion: 'Vacuno destinado a faena. Sigue vivo y en libros. Candidato a vacunos_faenas.',
     },
-    [EstadoVacuno.SECA]: {
-        id: EstadoVacuno.SECA,
-        abreviatura: 'SECA',
-        label: 'Seca',
+    [EstadoVacuno.FAENADO]: {
+        id: EstadoVacuno.FAENADO,
+        abreviatura: 'FAENADO',
+        label: 'Faenado',
         prefijo: null,
         valor: 3,
-        descripcion: 'Vaca en período seco, sin producción de leche activa. No puede registrarse en producciones_leche_detalle.',
+        descripcion: 'Vacuno faenado (sacrificado, carne producida). Estado FINAL. Requiere fecha_salida, motivo_salida y precio_venta.',
     },
-    [EstadoVacuno.DESCARTE]: {
-        id: EstadoVacuno.DESCARTE,
-        abreviatura: 'DESCARTE',
-        label: 'Descarte',
+    [EstadoVacuno.PARA_VENTA]: {
+        id: EstadoVacuno.PARA_VENTA,
+        abreviatura: 'PARA_VENTA',
+        label: 'Para Venta',
         prefijo: null,
         valor: 4,
-        descripcion: 'Vacuno al final de su vida productiva, destinado a venta. No puede registrarse en producciones_leche_detalle.',
+        descripcion: 'Vacuno destinado a venta en pie. Sigue vivo y en libros. Candidato a venta.',
     },
     [EstadoVacuno.VENDIDO]: {
         id: EstadoVacuno.VENDIDO,
@@ -7283,7 +7283,7 @@ export const ESTADO_VACUNO_METADATA: Record<number, ConstanteMetadata & { label:
         label: 'Vendido',
         prefijo: null,
         valor: 5,
-        descripcion: 'Estado FINAL. Requiere fecha_salida, motivo_salida y precio_venta. No puede reactivarse. El vacuno se conserva para auditoría (R.8).',
+        descripcion: 'Vacuno vendido en pie (salió del hato, NO se faenó). Estado FINAL. Requiere fecha_salida, motivo_salida y precio_venta.',
     },
     [EstadoVacuno.MUERTO]: {
         id: EstadoVacuno.MUERTO,
@@ -7291,15 +7291,18 @@ export const ESTADO_VACUNO_METADATA: Record<number, ConstanteMetadata & { label:
         label: 'Muerto',
         prefijo: null,
         valor: 6,
-        descripcion: 'Estado FINAL. Requiere fecha_salida, motivo_salida y causa_muerte. No puede reactivarse. El vacuno se conserva para auditoría (R.8).',
+        descripcion: 'Vacuno muerto (no se faenó, no se vendió). Estado FINAL. Requiere fecha_salida, motivo_salida y causa_muerte.',
     },
 };
 
 export const ESTADOS_VACUNO_PRODUCTIVOS = [
     EstadoVacuno.ACTIVO,
+    EstadoVacuno.PARA_FAENA,
+    EstadoVacuno.PARA_VENTA,
 ] as const;
 
 export const ESTADOS_VACUNO_FINALES = [
+    EstadoVacuno.FAENADO,
     EstadoVacuno.VENDIDO,
     EstadoVacuno.MUERTO,
 ] as const;

@@ -65,48 +65,6 @@ function parseFecha(value: string | Date | null | undefined): Date | null {
 }
 
 /**
- * Formatea una fecha a formato legible por humanos.
- *
- * @param value       Fecha en cualquier formato soportado por parseFecha.
- * @param soloFecha   Si es `true`, devuelve solo "dd/MM/yyyy" (sin hora).
- * @param conSegundos Si es `true`, incluye segundos en la hora.
- *
- * @returns Fecha formateada o "—" si el valor es inválido/vacío.
- *
- * @example
- *   formatFecha('2026-01-01 00:00:00.000 -04:00')          → '01/01/2026 00:00'
- *   formatFecha('2026-01-01 00:00:00.000 -04:00', true)    → '01/01/2026'
- *   formatFecha('2026-01-01 00:00:00.000 -04:00', false, true) → '01/01/2026 00:00:00'
- *   formatFecha(null)                                       → '—'
- *   formatFecha('')                                         → '—'
- *   formatFecha('texto inválido')                           → '—'
- */
-export function formatFecha(
-    value: string | Date | null | undefined,
-    soloFecha: boolean = false,
-    conSegundos: boolean = false,
-): string {
-    const date = parseFecha(value);
-    if (!date) return '—';
-
-    const dd   = String(date.getDate()).padStart(2, '0');
-    const mm   = String(date.getMonth() + 1).padStart(2, '0');
-    const yyyy = date.getFullYear();
-
-    if (soloFecha) return `${dd}/${mm}/${yyyy}`;
-
-    const hh = String(date.getHours()).padStart(2, '0');
-    const mi = String(date.getMinutes()).padStart(2, '0');
-
-    if (conSegundos) {
-        const ss = String(date.getSeconds()).padStart(2, '0');
-        return `${dd}/${mm}/${yyyy} ${hh}:${mi}:${ss}`;
-    }
-
-    return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
-}
-
-/**
  * Formatea una fecha mostrando la hora en formato 12h con AM/PM.
  *
  * @example

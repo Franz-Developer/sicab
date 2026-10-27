@@ -2,7 +2,7 @@
 <template>
     <div class="flex flex-col h-full min-h-0">
         <!-- ─── HEADER ─── -->
-        <div class="flex items-center justify-between gap-2 mb-0 flex-nowrap">
+        <div class="flex items-center justify-between gap-2 mb-1 flex-nowrap">
             <div class="flex items-center gap-2 min-w-0 flex-1">
                 <div class="bg-[var(--primary-dark)] p-1.5 rounded-lg shadow-md shadow-blue-900/20 flex-shrink-0">
                     <i :class="[icon, 'text-white text-sm']"></i>

@@ -168,121 +168,121 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted } from 'vue';
-import { useAuthStore } from '@/stores/auth';
+    import { ref, computed, nextTick, onMounted } from 'vue';
+    import { useAuthStore } from '@/stores/auth';
 
-useHead({ title: 'Tipos de Semovientes' });
+    useHead({ title: 'Tipos de Semovientes' });
 
-// ============ DEPENDENCIAS ============
-const authStore = useAuthStore();
-const { $rules } = useNuxtApp() as any;
+    // ============ DEPENDENCIAS ============
+    const authStore = useAuthStore();
+    const { $rules } = useNuxtApp() as any;
 
-// ============ CRUD PRINCIPAL (useCrudTable) ============
-const {
-    items, loading, totalRecords, filters, lazyParams,
-    dialog, deleteDialog, formObj, submitted, touched,
-    isUpdate, permisos, estaProtegido,
-    onPage, onSort, onSearch,
-    openNew, edit, hideDialog, save,
-    toggleEstado, confirmDelete, deleteItem,
-} = useCrudTable<any>({
-    tabla: 'tipos-semovientes',
-    tablaPermisos: 'tipos_semovientes',
-    sortFieldDefault: 'tipo_id',
-    sortOrderDefault: -1,
-    rowsDefault: 10,
-    autoLoad: false,
+    // ============ CRUD PRINCIPAL (useCrudTable) ============
+    const {
+        items, loading, totalRecords, filters, lazyParams,
+        dialog, deleteDialog, formObj, submitted, touched,
+        isUpdate, permisos, estaProtegido,
+        onPage, onSort, onSearch,
+        openNew, edit, hideDialog, save,
+        toggleEstado, confirmDelete, deleteItem,
+    } = useCrudTable<any>({
+        tabla: 'tipos-semovientes',
+        tablaPermisos: 'tipos_semovientes',
+        sortFieldDefault: 'tipo_id',
+        sortOrderDefault: -1,
+        rowsDefault: 10,
+        autoLoad: false,
 
-    // Definimos los campos que se bloquearán si el registro tiene dependencias
-    camposProtegidosPorDependencia: ['semoviente', 'vida_util_anios', 'tasa_amortizacion'],
+        // Definimos los campos que se bloquearán si el registro tiene dependencias
+        camposProtegidosPorDependencia: ['semoviente', 'vida_util_anios', 'tasa_amortizacion'],
 
-    defaultFilters: {
-        global: '',
-        exactMatch: 0,
-    },
+        defaultFilters: {
+            global: '',
+            exactMatch: 0,
+        },
 
-    getExtraFilters: (f: Record<string, any>) => ({
-        exactMatch: f.exactMatch ?? 0,
-    }),
+        getExtraFilters: (f: Record<string, any>) => ({
+            exactMatch: f.exactMatch ?? 0,
+        }),
 
-    getPrimaryKey: (item: any) => item.tipo_id,
+        getPrimaryKey: (item: any) => item.tipo_id,
 
-    getCleanForm: () => ({
-        tipo_id: null,
-        semoviente: '',
-        vida_util_anios: 5, // Un valor por defecto lógico
-        tasa_amortizacion: 20.00,
-    }),
+        getCleanForm: () => ({
+            tipo_id: null,
+            semoviente: '',
+            vida_util_anios: 5, // Un valor por defecto lógico
+            tasa_amortizacion: 20.00,
+        }),
 
-    buildPayload: (form: any) => ({
-        semoviente: form.semoviente?.trim().toUpperCase(),
-        vida_util_anios: Number(form.vida_util_anios),
-        tasa_amortizacion: Number(form.tasa_amortizacion),
-    }),
+        buildPayload: (form: any) => ({
+            semoviente: form.semoviente?.trim().toUpperCase(),
+            vida_util_anios: Number(form.vida_util_anios),
+            tasa_amortizacion: Number(form.tasa_amortizacion),
+        }),
 
-    validate: (form: any, rules: any, notify: any) => {
-        if (!form.semoviente?.trim()) {
-            touched.value.semoviente = true;
-            notify('warn', 'Campos incompletos', 'El nombre del semoviente es obligatorio.');
-            return false;
-        }
-        if (rules.longitudMinima(3)(form.semoviente) !== true) {
-            touched.value.semoviente = true;
-            notify('warn', 'Nombre inválido', rules.longitudMinima(3)(form.semoviente));
-            return false;
-        }
-        if (form.vida_util_anios === null || form.vida_util_anios === undefined || form.vida_util_anios <= 0) {
-            touched.value.vida_util_anios = true;
-            notify('warn', 'Vida útil inválida', 'La vida útil debe ser mayor a 0 años.');
-            return false;
-        }
-        if (form.tasa_amortizacion === null || form.tasa_amortizacion === undefined || form.tasa_amortizacion < 0 || form.tasa_amortizacion > 100) {
-            touched.value.tasa_amortizacion = true;
-            notify('warn', 'Tasa inválida', 'La tasa de amortización debe estar entre 0 y 100.');
-            return false;
-        }
-        return true;
-    },
-});
+        validate: (form: any, rules: any, notify: any) => {
+            if (!form.semoviente?.trim()) {
+                touched.value.semoviente = true;
+                notify('warn', 'Campos incompletos', 'El nombre del semoviente es obligatorio.');
+                return false;
+            }
+            if (rules.longitudMinima(3)(form.semoviente) !== true) {
+                touched.value.semoviente = true;
+                notify('warn', 'Nombre inválido', rules.longitudMinima(3)(form.semoviente));
+                return false;
+            }
+            if (form.vida_util_anios === null || form.vida_util_anios === undefined || form.vida_util_anios <= 0) {
+                touched.value.vida_util_anios = true;
+                notify('warn', 'Vida útil inválida', 'La vida útil debe ser mayor a 0 años.');
+                return false;
+            }
+            if (form.tasa_amortizacion === null || form.tasa_amortizacion === undefined || form.tasa_amortizacion < 0 || form.tasa_amortizacion > 100) {
+                touched.value.tasa_amortizacion = true;
+                notify('warn', 'Tasa inválida', 'La tasa de amortización debe estar entre 0 y 100.');
+                return false;
+            }
+            return true;
+        },
+    });
 
-// ============ TÍTULOS DINÁMICOS ============
-const tituloDialog = computed(() =>
-    isUpdate.value ? 'EDITAR TIPO DE SEMOVIENTE' : 'NUEVO TIPO DE SEMOVIENTE'
-);
+    // ============ TÍTULOS DINÁMICOS ============
+    const tituloDialog = computed(() =>
+        isUpdate.value ? 'EDITAR TIPO DE SEMOVIENTE' : 'NUEVO TIPO DE SEMOVIENTE'
+    );
 
-const subtituloDialog = computed(() =>
-    isUpdate.value
-        ? 'Actualización de los parámetros del semoviente'
-        : 'Registro de nuevo tipo de semoviente'
-);
+    const subtituloDialog = computed(() =>
+        isUpdate.value
+            ? 'Actualización de los parámetros del semoviente'
+            : 'Registro de nuevo tipo de semoviente'
+    );
 
-// ============ FOCUS INICIAL ============
-const semovienteRef = ref<any>(null);
+    // ============ FOCUS INICIAL ============
+    const semovienteRef = ref<any>(null);
 
-const focusFirstInput = async (): Promise<void> => {
-    await nextTick();
-    setTimeout(() => {
-        const input = semovienteRef.value?.$el?.querySelector('input') as HTMLInputElement | null;
-        input?.focus();
-        input?.select();
-    }, 350);
-};
+    const focusFirstInput = async (): Promise<void> => {
+        await nextTick();
+        setTimeout(() => {
+            const input = semovienteRef.value?.$el?.querySelector('input') as HTMLInputElement | null;
+            input?.focus();
+            input?.select();
+        }, 350);
+    };
 
-// ============ COLUMNAS DE LA TABLA ============
-const columns = [
-    { expander: true, class: 'w-10', bodyClass: '!text-center' },
-    { field: 'semoviente', header: 'SEMOVIENTE', sortable: true, template: 'body-semoviente' },
-    { field: 'vida_util_anios', header: 'VIDA ÚTIL', sortable: true, template: 'body-vida_util_anios', bodyClass: '!text-center', class: 'w-32' },
-    { field: 'tasa_amortizacion', header: 'TASA AMORT.', sortable: true, template: 'body-tasa_amortizacion', bodyClass: '!text-center', class: 'w-32' },
-    { field: 'estado_registro', header: 'ESTADO', sortable: false, template: 'body-estado', bodyClass: '!text-center', class: 'w-24' },
-    { header: 'ACCIONES', template: 'body-acciones', sortable: false, class: '!text-center !w-28' },
-];
+    // ============ COLUMNAS DE LA TABLA ============
+    const columns = [
+        { expander: true, class: 'w-10', bodyClass: '!text-center' },
+        { field: 'semoviente', header: 'SEMOVIENTE', sortable: true, template: 'body-semoviente' },
+        { field: 'vida_util_anios', header: 'VIDA ÚTIL', sortable: true, template: 'body-vida_util_anios', bodyClass: '!text-center', class: 'w-32' },
+        { field: 'tasa_amortizacion', header: 'TASA AMORT.', sortable: true, template: 'body-tasa_amortizacion', bodyClass: '!text-center', class: 'w-32' },
+        { field: 'estado_registro', header: 'ESTADO', sortable: false, template: 'body-estado', bodyClass: '!text-center', class: 'w-24' },
+        { header: 'ACCIONES', template: 'body-acciones', sortable: false, class: '!text-center !w-28' },
+    ];
 
-// ============ INIT ============
-onMounted(() => {
-    lazyParams.value.sortField = 'tipo_id';
-    lazyParams.value.sortOrder = -1;
-    lazyParams.value.first = 0;
-    onSearch();
-});
+    // ============ INIT ============
+    onMounted(() => {
+        lazyParams.value.sortField = 'tipo_id';
+        lazyParams.value.sortOrder = -1;
+        lazyParams.value.first = 0;
+        onSearch();
+    });
 </script>

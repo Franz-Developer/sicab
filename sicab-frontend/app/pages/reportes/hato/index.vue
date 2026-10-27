@@ -69,7 +69,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { getTodayLocal, formatFecha } from '~/utils/date';
+import { getTodayLocal } from '~/utils/date';
 import { ESTADO_ACTIVO } from '~/constants/estados.constant';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -212,7 +212,7 @@ const exportToPdf = async () => {
             formatNumber(row.valor_libro),
             row.estado_vacuno,
             row.sucursal,
-            formatFecha(row.fecha_ingreso, true)
+            row.fecha_ingreso ? new Date(row.fecha_ingreso).toLocaleDateString('es-BO') : '—'
         ]);
 
         // 5. Renderizar con autoTable

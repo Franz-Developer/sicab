@@ -2,7 +2,7 @@
 <template>
     <div>
         <!-- <Toast /> -->
-        <Toast group="success" position="top-right" />
+        <Toast group="success" position="top-left" />
         <Toast group="centered" position="top-center" />
 
         <NuxtLayout>

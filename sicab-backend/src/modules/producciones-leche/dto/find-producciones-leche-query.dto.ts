@@ -4,6 +4,7 @@ import { IsOptional, IsString, IsIn, IsInt, Min, IsDateString } from 'class-vali
 import { ESTADO_METADATA, ESTADOS_CONSULTA } from '../../../common/constants/estados.constant';
 import { BasePaginationQueryDto } from '../../../common/dto/base-pagination-query.dto';
 import { createEnumMessage } from '../../../common/utils/validation-helper.util';
+import { IsCompareFields } from '../../../common/validators/compare-fields.validator';
 
 export class FindProduccionesLecheQueryDto extends BasePaginationQueryDto {
     @IsOptional()
@@ -49,11 +50,16 @@ export class FindProduccionesLecheQueryDto extends BasePaginationQueryDto {
     empresa_id?: number;
 
     @IsOptional()
+    @IsDateString({}, { message: 'fecha_produccion debe ser una fecha válida (YYYY-MM-DD).' })
+    fecha_produccion?: string;
+
+    @IsOptional()
     @IsDateString({}, { message: 'fecha_produccion_desde debe ser una fecha válida (YYYY-MM-DD).' })
     fecha_produccion_desde?: string;
 
     @IsOptional()
     @IsDateString({}, { message: 'fecha_produccion_hasta debe ser una fecha válida (YYYY-MM-DD).' })
+    @IsCompareFields('fecha_produccion_desde', 'lte', 'fecha_produccion_hasta')
     fecha_produccion_hasta?: string;
 
     protected override getDefaultSortField(): string {
@@ -87,12 +93,7 @@ export class FindProduccionesLecheQueryDto extends BasePaginationQueryDto {
             `${alias}.total_litros`,
             `${alias}.total_descartado`,
             `${alias}.total_neto`,
-            `${alias}.temperatura_promedio`,
-            `${alias}.densidad_promedio`,
             `${alias}.observaciones`,
-            `(SELECT COUNT(*) FROM producciones_leche_detalle d
-              WHERE d.produccion_leche_id = ${alias}.produccion_leche_id
-                AND d.estado_id = 1000) AS total_vacunos`,
             `${alias}.estado_id`,
             `${alias}.usuario_id_registro`,
             `${alias}.usuario_id_actualizacion`,
@@ -163,8 +164,6 @@ export class FindProduccionesLecheQueryDto extends BasePaginationQueryDto {
             'total_litros': `${alias}.total_litros`,
             'total_descartado': `${alias}.total_descartado`,
             'total_neto': `${alias}.total_neto`,
-            'temperatura_promedio': `${alias}.temperatura_promedio`,
-            'densidad_promedio': `${alias}.densidad_promedio`,
             'observaciones': `${alias}.observaciones`,
             'estado_id': `${alias}.estado_id`,
             'usuario_id_registro': `${alias}.usuario_id_registro`,

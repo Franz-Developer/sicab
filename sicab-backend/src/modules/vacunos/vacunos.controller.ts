@@ -17,7 +17,8 @@ import { FindVacunosQueryDto } from './dto/find-vacunos-query.dto';
 import { VacunoResponseDto } from './dto/vacuno-response.dto';
 import { UpdateVacunoDto } from './dto/update-vacuno.dto';
 import { CambiarEstadoVacunoDto } from './dto/cambiar-estado-vacuno.dto';
-import { VacunosService } from './vacunos.service';
+import { VacunosService, GestionesDisponiblesResult } from './vacunos.service';
+import { TransferirVacunoDto } from './dto/transferir-vacuno.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('vacunos')
@@ -66,6 +67,15 @@ export class VacunosController {
         return result;
     }
 
+    @Get('gestiones')
+    @FindAllRateLimit()
+    @Cache('vacunos', CACHE_BASE)
+    obtenerGestiones(
+        @GetUser() user: AuthenticatedUser,
+    ): Promise<GestionesDisponiblesResult> {
+        return this.vacunosService.obtenerGestionesDisponibles(user.usuario_id);
+    }
+
     @Get(':id')
     @FindOneRateLimit()
     @Cache('vacunos', CACHE_BASE)
@@ -108,6 +118,18 @@ export class VacunosController {
         @GetUser() user: AuthenticatedUser
     ): Promise<VacunoResponseDto> {
         const vacuno = await this.vacunosService.cambiarEstado(id, dto, user.usuario_id);
+        return this.transformarFoto(vacuno);
+    }
+
+    @Patch(':id/transferir')
+    @UpdateRateLimit()
+    @InvalidateCache('vacunos')
+    async transferir(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: TransferirVacunoDto,
+        @GetUser() user: AuthenticatedUser
+    ): Promise<VacunoResponseDto> {
+        const vacuno = await this.vacunosService.transferirSucursal(id, dto, user.usuario_id);
         return this.transformarFoto(vacuno);
     }
 

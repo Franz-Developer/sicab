@@ -40,6 +40,7 @@ import { ProduccionesLecheModule } from './modules/producciones-leche/produccion
 import { AmortizacionesVacunosModule } from './modules/amortizaciones-vacunos/amortizaciones-vacunos.module';
 import { ReportesModule } from './modules/reportes/reportes.module';
 import { TiposSemovientesModule } from './modules/tipos-semovientes/tipos-semovientes.module';
+import { VacunosFaenasModule } from './modules/vacunos-faenas/vacunos-faenas.module';
 
 @Module({
     imports: [
@@ -90,7 +91,8 @@ import { TiposSemovientesModule } from './modules/tipos-semovientes/tipos-semovi
         ProduccionesLecheModule,
         AmortizacionesVacunosModule,
         ReportesModule,
-        TiposSemovientesModule
+        TiposSemovientesModule,
+        VacunosFaenasModule,
     ],
     controllers: [],
     providers: [

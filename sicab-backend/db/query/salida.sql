@@ -1,15 +1,23 @@
---- Resultado #1 (UPDATE command) ---
-Estado: OK
-Filas afectadas: 4
 --- Resultado (SELECT command) ---
---------+------------+-------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------+---------------------+------+----------+--------------------+-------------------------+----------------+-------------------------------+--------------------+-----------
-raza_id |raza        |codigo |descripcion                                                                                                                                                      |origen                       |peso_promedio_adulto |foto  |estado_id |usuario_id_registro |usuario_id_actualizacion |usuario_id_baja |fecha_registro                 |fecha_actualizacion |fecha_baja 
---------+------------+-------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------+---------------------+------+----------+--------------------+-------------------------+----------------+-------------------------------+--------------------+-----------
-1       |NINGUNA     |NIN    |REGISTRO COMODIN POR DEFECTO DEL SISTEMA                                                                                                                         |NULL                         |NULL                 |1.jpg |1000      |1                   |NULL                     |NULL            |2026-10-16 22:13:29.437 -04:00 |NULL                |NULL       
-2       |HOLSTEIN    |HOL    |RAZA LECHERA DE ORIGEN EUROPEO, ALTA PRODUCCION DE LECHE, PELO BLANCO Y NEGRO. ES LA RAZA MAS DIFUNDIDA EN LAS CUENCAS LECHERAS DE BOLIVIA (ALTIPLANO Y VALLES). |PAISES BAJOS                 |600.00               |2.jpg |1000      |2                   |NULL                     |NULL            |2026-10-16 22:13:29.437 -04:00 |NULL                |NULL       
-3       |PARDO SUIZO |PSU    |RAZA DE DOBLE PROPOSITO (LECHE Y CARNE), RESISTENTE A CLIMAS VARIADOS, BUENA PRODUCCION LECHERA. MUY ADAPTADA A LAS CONDICIONES DEL ALTIPLANO BOLIVIANO.         |SUIZA                        |650.00               |3.jpg |1000      |2                   |NULL                     |NULL            |2026-10-16 22:13:29.437 -04:00 |NULL                |NULL       
-4       |JERSEY      |JER    |RAZA LECHERA DE PEQUENO PORTE, ALTA CONCENTRACION DE GRASA EN LA LECHE. UTILIZADA EN CRUCES PARA MEJORAR LA CALIDAD DE LA LECHE EN HATOS BOLIVIANOS.             |ISLA DE JERSEY - REINO UNIDO |450.00               |4.jpg |1000      |2                   |NULL                     |NULL            |2026-10-16 22:13:29.437 -04:00 |NULL                |NULL       
---------+------------+-------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------+---------------------+------+----------+--------------------+-------------------------+----------------+-------------------------------+--------------------+-----------
-Total de filas: 4
+-------+----------------------------------------------------+-------+----------+------------+-----------+----------+-----------------
+arete  |fecha_pesaje                                        |peso   |pesaje_id |sucursal_id |empresa_id |estado_id |estado_vacuno_id 
+-------+----------------------------------------------------+-------+----------+------------+-----------+----------+-----------------
+000022 |Mon Oct 26 2026 00:00:00 GMT-0400 (hora de Bolivia) |928.00 |141       |4           |2          |1000      |6400             
+000018 |Mon Oct 26 2026 00:00:00 GMT-0400 (hora de Bolivia) |117.00 |140       |2           |2          |1000      |6400             
+000062 |Mon Oct 26 2026 00:00:00 GMT-0400 (hora de Bolivia) |21.00  |139       |2           |2          |1000      |6400             
+000020 |Mon Oct 26 2026 00:00:00 GMT-0400 (hora de Bolivia) |126.00 |138       |2           |2          |1000      |6400             
+000033 |Mon Oct 26 2026 00:00:00 GMT-0400 (hora de Bolivia) |345.00 |137       |4           |2          |1000      |6400             
+000035 |Mon Oct 26 2026 00:00:00 GMT-0400 (hora de Bolivia) |35.00  |136       |2           |2          |1000      |6400             
+000013 |Mon Oct 26 2026 00:00:00 GMT-0400 (hora de Bolivia) |555.00 |135       |3           |2          |1000      |6400             
+000031 |Mon Oct 26 2026 00:00:00 GMT-0400 (hora de Bolivia) |500.00 |134       |4           |2          |1000      |6400             
+000034 |Mon Oct 26 2026 00:00:00 GMT-0400 (hora de Bolivia) |110.00 |133       |4           |2          |1000      |6400             
+000012 |Mon Oct 26 2026 00:00:00 GMT-0400 (hora de Bolivia) |445.00 |132       |2           |2          |1000      |6400             
+000063 |Mon Oct 26 2026 00:00:00 GMT-0400 (hora de Bolivia) |23.00  |131       |2           |2          |1000      |6400             
+000061 |Wed Jul 15 2026 00:00:00 GMT-0400 (hora de Bolivia) |510.00 |130       |4           |2          |1002      |6402             
+000060 |Fri Jul 10 2026 00:00:00 GMT-0400 (hora de Bolivia) |520.00 |129       |4           |2          |1002      |6402             
+000059 |Sun Jul 05 2026 00:00:00 GMT-0400 (hora de Bolivia) |500.00 |128       |4           |2          |1002      |6402             
+000058 |Wed Jul 01 2026 00:00:00 GMT-0400 (hora de Bolivia) |480.00 |127       |4           |2          |1002      |6402             
+-------+----------------------------------------------------+-------+----------+------------+-----------+----------+-----------------
+Total de filas: 15
 
 

@@ -57,6 +57,10 @@ export class FindVacunosPesajesQueryDto extends BasePaginationQueryDto {
     @IsDateString({}, { message: 'fecha_pesaje_hasta debe ser una fecha válida (YYYY-MM-DD).' })
     fecha_pesaje_hasta?: string;
 
+    @IsOptional()
+    @IsDateString({}, { message: 'fecha_pesaje debe ser una fecha válida (YYYY-MM-DD).' })
+    fecha_pesaje?: string;
+
     static getCampos(): string[] {
         const alias = 't';
         const aliasVacuno = 'v';

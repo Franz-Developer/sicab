@@ -19,8 +19,7 @@ import { bigintTransformer, decimalTransformer } from '../../../common/utils/typ
         (usuario_id_actualizacion IS NOT NULL AND fecha_actualizacion IS NOT NULL)
     ))
 `)
-@Check('chk_pesajes_peso', 'peso >= 0')
-@Check('chk_pesajes_fechapesaje', 'fecha_pesaje <= CURRENT_DATE')
+@Check('chk_pesajes_peso', 'peso >= 0 AND peso <= 1500')
 @Check('chk_pesajes_observaciones_notempty', "observaciones IS NULL OR TRIM(observaciones) <> ''")
 @Index('uix_pesajes_vacuno_fecha', ['vacuno_id', 'fecha_pesaje'], { unique: true, where: 'estado_id = 1000' })
 export class VacunoPesaje extends BaseAuditEntity {

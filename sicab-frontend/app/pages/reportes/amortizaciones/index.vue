@@ -116,7 +116,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { getTodayLocal, toLocalDateInput, formatFecha } from '~/utils/date';
+import { getTodayLocal, toLocalDateInput } from '~/utils/date';
 import { ESTADO_ACTIVO, ESTADO_METADATA } from '~/constants/estados.constant';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -271,7 +271,7 @@ const exportToPdf = async () => {
         const tableBody = detalle.map((row: any) => [
             row.arete ?? '—',
             row.nombre || '—',
-            formatFecha(row.periodo, true),
+            row.periodo ? row.periodo.split('T')[0].split('-').reverse().join('/') : '—',
             formatNumber(row.valor_inicial),
             formatNumber(row.amortizacion_periodo),
             formatNumber(row.amortizacion_acumulada),
