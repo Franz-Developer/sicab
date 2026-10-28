@@ -1,0 +1,277 @@
+# C:\sistemas\sicab\sicab-backend\src\modules\tareas-programadas\tareas-programadas.http
+# ----------------------------------------------------------------------
+# DEFINICIÓN DE VARIABLES
+# ----------------------------------------------------------------------
+@baseUrl = http://localhost:3010/api
+@baseUrl_tareas = {{baseUrl}}/tareas-programadas
+@baseUrl_vacunos = {{baseUrl}}/vacunos
+@baseUrl_categorias = {{baseUrl}}/categorias-vacuno
+@baseUrl_constantes = {{baseUrl}}/constantes
+@rest-client.previewOption = body
+
+### 1. OBTENER TOKEN DE AUTENTICACIÓN.
+# @name login
+POST {{baseUrl}}/auth/validar
+Content-Type: application/json
+
+{
+    "username": "ADMIN",
+    "password": "12345678"
+}
+
+### 2. GUARDAR TOKEN EN VARIABLE.
+@authToken = {{login.response.body.token}}
+
+# ==============================================================================
+# ENDPOINT EXTRAS (Constantes)
+# ==============================================================================
+
+### LISTAR POR TIPO: TIPOS DE TAREA
+GET {{baseUrl_constantes}}?tipo=tipo_tarea_id
+Authorization: Bearer {{authToken}}
+
+### LISTAR POR TIPO: FRECUENCIAS
+GET {{baseUrl_constantes}}?tipo=frecuencia_id
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# LISTAR TAREAS PROGRAMADAS (GET)
+# ==============================================================================
+
+### LISTAR POR ESTADO ACTIVOS (1000)
+GET {{baseUrl_tareas}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+### LISTAR TODOS (Activos + Históricos por defecto)
+GET {{baseUrl_tareas}}
+Authorization: Bearer {{authToken}}
+
+### LISTAR ACTIVOS ORDENADOS POR CÓDIGO
+GET {{baseUrl_tareas}}?estado_id=1000&sortField=codigo&sortOrder=1&limit=100
+Authorization: Bearer {{authToken}}
+
+### BORRADOS (1001) - Solo con filtro explícito de auditoría
+GET {{baseUrl_tareas}}?estado_id=1001
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# FILTROS POR TIPO Y FRECUENCIA
+# ==============================================================================
+
+### FILTRAR POR TIPO CALCULO_CATEGORIAS (3406) - Única tarea del seed
+GET {{baseUrl_tareas}}?tipo_tarea_id=3406
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR FRECUENCIA CRON (3356)
+GET {{baseUrl_tareas}}?frecuencia_id=3356
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR FRECUENCIA DIARIO (3352) - CALCULO_CATEGORIAS_DIARIO
+GET {{baseUrl_tareas}}?frecuencia_id=3352
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# FILTROS POR NOTIFICACIÓN
+# ==============================================================================
+
+### TAREAS QUE NOTIFICAN AL ADMIN (1)
+GET {{baseUrl_tareas}}?notificar_admin=1
+Authorization: Bearer {{authToken}}
+
+### TAREAS QUE NO NOTIFICAN (0)
+GET {{baseUrl_tareas}}?notificar_admin=0
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# BÚSQUEDA POR TEXTO (q)
+# ==============================================================================
+
+### BUSCAR POR CÓDIGO
+GET {{baseUrl_tareas}}?q=CALCULO
+Authorization: Bearer {{authToken}}
+
+### BUSCAR POR NOMBRE
+GET {{baseUrl_tareas}}?q=CATEGORIAS
+Authorization: Bearer {{authToken}}
+
+### BÚSQUEDA COMBINADA: TEXTO + TIPO
+GET {{baseUrl_tareas}}?q=vacunos&tipo_tarea_id=3406
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# PAGINACIÓN
+# ==============================================================================
+
+### PÁGINA 1: Registros 0 al 9
+GET {{baseUrl_tareas}}?offset=0&limit=10
+Authorization: Bearer {{authToken}}
+
+### PÁGINA 2: Registros 10 al 19
+GET {{baseUrl_tareas}}?offset=10&limit=10
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# ORDENAMIENTO
+# ==============================================================================
+
+### ORDENAR POR ÚLTIMA EJECUCIÓN (Más recientes primero)
+GET {{baseUrl_tareas}}?sortField=ultima_ejecucion&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### ORDENAR POR INTENTOS FALLIDOS (Más fallos primero)
+GET {{baseUrl_tareas}}?sortField=intentos_fallidos&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# OBTENER POR ID
+# ==============================================================================
+
+### OBTENER TAREA CALCULO_CATEGORIAS_DIARIO (ID = 2)
+GET {{baseUrl_tareas}}/2
+Authorization: Bearer {{authToken}}
+
+### OBTENER COMODÍN (ID = 1) - Debe devolver 403 (protegido)
+GET {{baseUrl_tareas}}/1
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# ACTUALIZAR TAREA PROGRAMADA (PATCH - Solo 5 campos permitidos)
+# ==============================================================================
+
+### ACTUALIZAR DESCRIPCIÓN
+PATCH {{baseUrl_tareas}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "descripcion": "Actualiza la categoría de cada vacuno según su sexo y edad (edad_min_meses / edad_max_meses de categorias_vacuno). Ejecución nocturna."
+}
+
+### ACTUALIZAR FRECUENCIA (de DIARIO a SEMANAL)
+PATCH {{baseUrl_tareas}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "frecuencia_id": 3353,
+    "cron_expresion": "0 3 * * 1"
+}
+
+### ACTUALIZAR PARÁMETROS JSONB
+PATCH {{baseUrl_tareas}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "parametros": {
+        "lote_size": 50,
+        "solo_activos": true,
+        "log_cambios": false
+    }
+}
+
+### ACTUALIZAR NOTIFICAR_ADMIN
+PATCH {{baseUrl_tareas}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "notificar_admin": 0
+}
+
+### ACTUALIZAR TODO A LA VEZ
+PATCH {{baseUrl_tareas}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "descripcion": "Tarea de recategorización optimizada.",
+    "frecuencia_id": 3352,
+    "cron_expresion": "0 2 * * *",
+    "parametros": { "lote_size": 200 },
+    "notificar_admin": 1
+}
+
+# ==============================================================================
+# INTENTOS DE ACTUALIZACIÓN PROHIBIDOS (Deben devolver 400)
+# ==============================================================================
+
+### INTENTO: Cambiar código (Prohibido)
+PATCH {{baseUrl_tareas}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "codigo": "NUEVO_CODIGO"
+}
+
+### INTENTO: Cambiar estado_id directamente (Prohibido)
+PATCH {{baseUrl_tareas}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "estado_id": 1002
+}
+
+### INTENTO: Cambiar nombre (Prohibido según tu R.3)
+PATCH {{baseUrl_tareas}}/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "nombre": "OTRO NOMBRE"
+}
+
+# ==============================================================================
+# ARCHIVAR Y REACTIVAR (HISTÓRICO = 1002)
+# ==============================================================================
+
+### ARCHIVAR TAREA (Pasa a 1002 y detiene el CronJob)
+PATCH {{baseUrl_tareas}}/2/archivar
+Authorization: Bearer {{authToken}}
+
+### REACTIVAR TAREA (Vuelve a 1000 y reprograma el CronJob)
+PATCH {{baseUrl_tareas}}/2/reactivar
+Authorization: Bearer {{authToken}}
+
+### INTENTO: Reactivar una tarea que NO está en 1002 (Debe devolver 409)
+PATCH {{baseUrl_tareas}}/2/reactivar
+Authorization: Bearer {{authToken}}
+
+### INTENTO: Archivar el comodín (Debe devolver 403)
+PATCH {{baseUrl_tareas}}/1/archivar
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# ELIMINAR (Borrado lógico - Irreversible)
+# ==============================================================================
+
+### ELIMINAR TAREA (ACTIVO → BORRADO)
+DELETE {{baseUrl_tareas}}/2
+Authorization: Bearer {{authToken}}
+
+### INTENTO: Eliminar el comodín (Debe devolver 403)
+DELETE {{baseUrl_tareas}}/1
+Authorization: Bearer {{authToken}}
+
+### INTENTO: Reactivar una tarea eliminada (Debe devolver 404 o 409)
+PATCH {{baseUrl_tareas}}/2/reactivar
+Authorization: Bearer {{authToken}}
+
+# ==============================================================================
+# TEST MANUAL DE EJECUCIÓN (TEMPORAL)
+# ==============================================================================
+
+###
+GET {{baseUrl_categorias}}?estado_id=1000&sexo_biologico_permitido_id=6301
+Authorization: Bearer {{authToken}}
+
+### OBTENER VACUNO POR ID
+GET {{baseUrl_vacunos}}/63
+Authorization: Bearer {{authToken}}
+
+
+### FORZAR EJECUCIÓN DE LA TAREA (Ejecuta el CronJob manualmente sin esperar la hora)
+POST {{baseUrl_tareas}}/test-ejecutar/CALCULO_CATEGORIAS_DIARIO
+Authorization: Bearer {{authToken}}

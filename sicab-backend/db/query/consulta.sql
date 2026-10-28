@@ -23,8 +23,9 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
 ORDER BY kcu.table_name;
 */
 
-UPDATE vacunos set foto = '32.jpg' WHERE vacuno_id = 32;
+UPDATE vacunos SET fecha_nacimiento = CURRENT_DATE - INTERVAL '6 months' WHERE vacuno_id = 63;
 
 SELECT *
 FROM vacunos
+where vacuno_id = 63
 ORDER BY vacuno_id ASC;

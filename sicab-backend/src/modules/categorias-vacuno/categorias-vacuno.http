@@ -123,3 +123,7 @@ Authorization: Bearer {{authToken}}
 ### ELIMINAR (ACTIVO → BORRADO)
 DELETE {{baseUrl_categorias}}/15
 Authorization: Bearer {{authToken}}
+
+###
+GET {{baseUrl_categorias}}?estado_id=1000&sexo_biologico_permitido_id=6301
+Authorization: Bearer {{authToken}}

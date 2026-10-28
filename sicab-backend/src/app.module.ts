@@ -39,6 +39,7 @@ import { AmortizacionesVacunosModule } from './modules/amortizaciones-vacunos/am
 import { ReportesModule } from './modules/reportes/reportes.module';
 import { TiposSemovientesModule } from './modules/tipos-semovientes/tipos-semovientes.module';
 import { VacunosFaenasModule } from './modules/vacunos-faenas/vacunos-faenas.module';
+import { TareasProgramadasModule } from './modules/tareas-programadas/tareas-programadas.module';
 
 @Module({
     imports: [
@@ -91,6 +92,7 @@ import { VacunosFaenasModule } from './modules/vacunos-faenas/vacunos-faenas.mod
         ReportesModule,
         TiposSemovientesModule,
         VacunosFaenasModule,
+        TareasProgramadasModule,
     ],
     controllers: [],
     providers: [
