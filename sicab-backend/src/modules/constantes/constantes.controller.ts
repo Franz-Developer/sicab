@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\constantes\constantes.controller.ts
 import { Controller, Get, Query, ValidationPipe, BadRequestException, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { ConstantesRateLimit } from '../../common/decorators/rate-limit.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/user.interface';
@@ -15,7 +14,6 @@ export class ConstantesController {
 
     @Get()
     @ConstantesRateLimit()
-    @Cache('constantes:findAll', CACHE_BASE)
     findAll(
         @Query(new ValidationPipe({
             transform: true,
@@ -37,56 +35,48 @@ export class ConstantesController {
 
     @Get('tipos')
     @ConstantesRateLimit()
-    @Cache('constantes:tipos', CACHE_BASE)
     getTipos() {
         return this.constantesService.getTipos();
     }
 
     @Get('estados')
     @ConstantesRateLimit()
-    @Cache('constantes:estados', CACHE_BASE)
     getEstados() {
         return this.constantesService.getEstados();
     }
 
     @Get('monedas')
     @ConstantesRateLimit()
-    @Cache('constantes:monedas', CACHE_BASE)
     getMonedas() {
         return this.constantesService.getMonedas();
     }
 
     @Get('generos')
     @ConstantesRateLimit()
-    @Cache('constantes:generos', CACHE_BASE)
     getGeneros() {
         return this.constantesService.getGeneros();
     }
 
     @Get('tipos-pago')
     @ConstantesRateLimit()
-    @Cache('constantes:tipos-pago', CACHE_BASE)
     getTiposPago() {
         return this.constantesService.getTiposPago();
     }
 
     @Get('tipos-venta')
     @ConstantesRateLimit()
-    @Cache('constantes:tipos-venta', CACHE_BASE)
     getTiposVenta() {
         return this.constantesService.getTiposVenta();
     }
 
     @Get('tipos-documento')
     @ConstantesRateLimit()
-    @Cache('constantes:tipos-documento', CACHE_BASE)
     getTiposDocumento() {
         return this.constantesService.getTiposDocumento();
     }
 
     @Get('eventos')
     @ConstantesRateLimit()
-    @Cache('constantes:eventos', CACHE_BASE)
     getEventos() {
         return this.constantesService.getEventos();
     }

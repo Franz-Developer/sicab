@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\categorias-vacuno\categorias-vacuno.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, ArchiveRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -21,7 +20,6 @@ export class CategoriasVacunoController {
 
     @Get()
     @FindAllRateLimit()
-    @Cache('categorias_vacuno', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true }))
         query: FindCategoriasVacunoQueryDto,
@@ -32,7 +30,6 @@ export class CategoriasVacunoController {
 
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('categorias_vacuno', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

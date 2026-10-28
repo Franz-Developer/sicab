@@ -235,25 +235,14 @@ Content-Type: application/json
     "tipo_periodo_id": 1
 }
 
-### ❌ ERROR: duplicado sin recalcular
-POST {{baseUrl_amortizaciones}}
+###
+GET {{baseUrl_amortizaciones}}/periodos-disponibles
 Authorization: Bearer {{authToken}}
-Content-Type: application/json
 
-{
-    "vacuno_id": 2,
-    "periodo": "2026-10-01",
-    "tipo_periodo_id": 1
-}
-
-### ❌ ERROR: intentar cambiar campos calculados en PATCH
-PATCH {{baseUrl_amortizaciones}}/2
+### OBTENER PERIODOS PARA CALCULAR (Tipos de Cambio UFV)
+GET {{baseUrl_amortizaciones}}/periodos-para-calcular?moneda_destino_id=2303
 Authorization: Bearer {{authToken}}
-Content-Type: application/json
 
-{
-    "valor_libro": 0
-}
-
-### ❌ ERROR: sin token
-GET {{baseUrl_amortizaciones}}
+### LISTAR GESTIONES FILTRADAS POR EMPRESA (Empresa 2 = CHOQUENAIRA)
+GET {{baseUrl_amortizaciones}}/gestiones-amortizadas?empresa_id=2
+Authorization: Bearer {{authToken}}

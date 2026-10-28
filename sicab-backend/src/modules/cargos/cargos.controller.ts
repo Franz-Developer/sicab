@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\cargos\cargos.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, ArchiveRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -24,7 +23,6 @@ export class CargosController {
     // GET /cargos - Listar cargos
     @Get()
     @FindAllRateLimit()
-    @Cache('cargos', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true }))
         query: FindCargosQueryDto,
@@ -36,7 +34,6 @@ export class CargosController {
     // GET /cargos/:id - Obtener un cargo
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('cargos', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

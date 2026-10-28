@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\empresas-nits\empresas-nits.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, ArchiveRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -24,7 +23,6 @@ export class EmpresasNitsController {
     // GET /empresas_nits - Listar NITs de empresas
     @Get()
     @FindAllRateLimit()
-    @Cache('empresas_nits', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true }))
         query: FindEmpresasNitsQueryDto,
@@ -36,7 +34,6 @@ export class EmpresasNitsController {
     // GET /empresas_nits/:id - Obtener un NIT de empresa
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('empresas_nits', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

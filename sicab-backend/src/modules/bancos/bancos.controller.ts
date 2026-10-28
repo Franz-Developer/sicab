@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\bancos\bancos.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, ArchiveRateLimit, FindAllRateLimit, FindOneRateLimit} from '../../common/decorators/rate-limit.decorator';
@@ -24,7 +23,6 @@ export class BancosController {
     // GET /bancos - Listar bancos
     @Get()
     @FindAllRateLimit()
-    @Cache('bancos', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true }))
         query: FindBancosQueryDto,
@@ -36,7 +34,6 @@ export class BancosController {
     // GET /bancos/:id - Obtener un banco
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('bancos', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser
@@ -47,7 +44,6 @@ export class BancosController {
     // POST /bancos - Crear banco
     @Post()
     @CreateRateLimit()
-    @InvalidateCache('bancos')
     create(
         @Body() dto: CreateBancoDto,
         @GetUser() user: AuthenticatedUser

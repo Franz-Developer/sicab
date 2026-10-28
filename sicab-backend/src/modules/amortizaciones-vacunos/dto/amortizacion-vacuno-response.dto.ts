@@ -5,18 +5,17 @@ import { transformMetadataAbreviatura, transformMetadataLabel, toNumber } from '
 import { formatLocalDate, formatOnlyDate } from '../../../common/utils/date-formatter.util';
 
 export class AmortizacionVacunoResponseDto {
-    @Expose() @Transform(toNumber) amortizacion_vacuno_id!: number;
-    @Expose() @Transform(toNumber) vacuno_id!: number;
+    @Expose() @Transform(({ value }) => Number(value)) amortizacion_vacuno_id!: number;
+    @Expose() @Transform(({ value }) => Number(value)) vacuno_id!: number;
     @Expose() vacuno_arete?: string | null;
     @Expose() vacuno_nombre?: string | null;
-    @Expose() @Transform(toNumber) sucursal_id?: number;
+    @Expose() @Transform(toNumber) sucursal_id?: number | null;
     @Expose() sucursal_nombre?: string | null;
     @Expose() sucursal_codigo?: string | null;
-    @Expose() @Transform(toNumber) empresa_id?: number;
+    @Expose() @Transform(toNumber) empresa_id?: number | null;
     @Expose() empresa_nombre?: string | null;
     @Expose() empresa_codigo?: string | null;
 
-    // ═══ CAMPOS CORREGIDOS SEGÚN EL DDL ═══
     @Expose() @Transform(toNumber) gestion!: number;
 
     @Expose() @Transform(({ value }) => Number(value)) valor_inicial!: number;
@@ -25,20 +24,16 @@ export class AmortizacionVacunoResponseDto {
     @Expose() @Transform(({ value }) => Number(value)) amortizacion_acumulada!: number;
     @Expose() @Transform(({ value }) => Number(value)) valor_libro!: number;
 
-    // ═══ CAMPOS UFV ═══
-    @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) valor_inicial_ufv?: number | null;
-    @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) valor_residual_ufv?: number | null;
-    @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) amortizacion_gestion_ufv?: number | null;
-    @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) amortizacion_acumulada_ufv?: number | null;
-    @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) valor_libro_ufv?: number | null;
-    @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) cotizacion_ufv_aplicada?: number | null;
+    @Expose() @Transform(toNumber) valor_inicial_ufv?: number | null;
+    @Expose() @Transform(toNumber) valor_residual_ufv?: number | null;
+    @Expose() @Transform(toNumber) amortizacion_gestion_ufv?: number | null;
+    @Expose() @Transform(toNumber) amortizacion_acumulada_ufv?: number | null;
+    @Expose() @Transform(toNumber) valor_libro_ufv?: number | null;
+    @Expose() @Transform(toNumber) cotizacion_ufv_aplicada?: number | null;
     @Expose() @Transform(({ value }) => formatOnlyDate(value)) fecha_cotizacion_ufv?: string | null;
 
-    // ═══ SNAPSHOTS ═══
     @Expose() @Transform(toNumber) vida_util_anios?: number | null;
-    @Expose() @Transform(({ value }) => value !== null && value !== undefined ? Number(value) : null) tasa_amortizacion?: number | null;
-
-    @Expose() observaciones?: string | null;
+    @Expose() @Transform(toNumber) tasa_amortizacion?: number | null;
 
     @Expose() @Transform(toNumber) estado_id!: number;
 

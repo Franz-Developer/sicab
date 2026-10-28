@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\producciones-leche\producciones-leche.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -48,7 +47,6 @@ export class ProduccionesLecheController {
 
     @Get()
     @FindAllRateLimit()
-    @Cache('producciones_leche', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true })) query: FindProduccionesLecheQueryDto,
         @GetUser() user: AuthenticatedUser
@@ -58,7 +56,6 @@ export class ProduccionesLecheController {
 
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('producciones_leche', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser
@@ -93,7 +90,6 @@ export class ProduccionesLecheController {
 
     @Get(':id/detalles')
     @FindAllRateLimit()
-    @Cache('producciones_leche_detalle', CACHE_BASE)
     findAllDetalles(
         @Param('id', ParseIntPipe) id: number,
         @Query(CustomValidationPipe({ concise: true })) query: FindProduccionesLecheDetalleQueryDto,
@@ -104,7 +100,6 @@ export class ProduccionesLecheController {
 
     @Get(':id/detalles/:detalleId')
     @FindOneRateLimit()
-    @Cache('producciones_leche_detalle', CACHE_BASE)
     findOneDetalle(
         @Param('id', ParseIntPipe) id: number,
         @Param('detalleId', ParseIntPipe) detalleId: number,

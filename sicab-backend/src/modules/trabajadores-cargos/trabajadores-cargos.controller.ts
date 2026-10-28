@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\trabajadores-cargos\trabajadores-cargos.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -24,7 +23,6 @@ export class TrabajadoresCargosController {
     // GET /trabajadores-cargos - Listar asignaciones
     @Get()
     @FindAllRateLimit()
-    @Cache('trabajadores_cargos', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true }))
         query: FindTrabajadoresCargosQueryDto,
@@ -36,7 +34,6 @@ export class TrabajadoresCargosController {
     // GET /trabajadores-cargos/:id - Obtener una asignación
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('trabajadores_cargos', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

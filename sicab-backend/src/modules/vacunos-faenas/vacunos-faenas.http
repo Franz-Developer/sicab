@@ -144,3 +144,71 @@ Content-Type: application/json
     "peso_vivo_faena": 480.00,
     "peso_canal_caliente": 500.00
 }
+
+### FILTRAR POR EMPRESA (empresa_id)
+GET {{baseUrl_faenas}}?empresa_id=2
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR SUCURSAL (sucursal_id)
+GET {{baseUrl_faenas}}?sucursal_id=4
+Authorization: Bearer {{authToken}}
+
+###
+GET {{baseUrl_faenas}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+###
+GET {{baseUrl_faenas}}
+Authorization: Bearer {{authToken}}
+
+###
+GET {{baseUrl_faenas}}?limit=10&offset=0&sortField=fecha_faena&sortOrder=-1&exactMatch=0
+Authorization: Bearer {{authToken}}
+
+###
+### LISTAR TODAS LAS FAENAS (Activas e Históricas)
+GET {{baseUrl_faenas}}
+Authorization: Bearer {{authToken}}
+
+### LISTAR FAENAS HISTÓRICAS (Auditoría)
+GET {{baseUrl_faenas}}?estado_id=1002
+Authorization: Bearer {{authToken}}
+
+### LISTAR FAENAS "ACTIVAS"
+GET {{baseUrl_faenas}}?estado_id=1000
+Authorization: Bearer {{authToken}}
+
+
+### OBTENER UNA FAENA POR ID
+GET {{baseUrl_faenas}}/21
+Authorization: Bearer {{authToken}}
+
+### BUSCAR FAENA POR ARETE O NOMBRE (Filtro q)
+GET {{baseUrl_faenas}}?estado_id=1002&q=HOLSTEIN&exactMatch=0
+Authorization: Bearer {{authToken}}
+
+### BUSCAR FAENA POR VACUNO ID ESPECÍFICO
+GET {{baseUrl_faenas}}?estado_id=1002&vacuno_id=62
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR RANGO DE FECHAS DE FAENA
+GET {{baseUrl_faenas}}?estado_id=1002&fecha_faena_desde=2026-01-01&fecha_faena_hasta=2026-12-31
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR EMPRESA (empresa_id)
+# Empresa 2 = GRANJA MODELO CHOQUENAIRA (todas las faenas pertenecen a esta empresa).
+GET {{baseUrl_faenas}}?estado_id=1002&empresa_id=2
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR SUCURSAL (sucursal_id)
+# Sucursal 4 = MONTERO. Todas las faenas del seed están en esta sucursal.
+GET {{baseUrl_faenas}}?estado_id=1002&sucursal_id=4
+Authorization: Bearer {{authToken}}
+
+### FILTRAR POR EMPRESA + SUCURSAL + RANGO DE FECHAS (combinado)
+GET {{baseUrl_faenas}}?estado_id=1002&empresa_id=2&sucursal_id=4&fecha_faena_desde=2026-01-01&fecha_faena_hasta=2026-06-30&sortField=fecha_faena&sortOrder=-1
+Authorization: Bearer {{authToken}}
+
+### PAGINACIÓN Y ORDENAMIENTO (Por fecha descendente)
+GET {{baseUrl_faenas}}?estado_id=1002&limit=10&offset=0&sortField=fecha_faena&sortOrder=-1
+Authorization: Bearer {{authToken}}

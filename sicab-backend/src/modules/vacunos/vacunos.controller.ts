@@ -2,7 +2,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -57,7 +56,6 @@ export class VacunosController {
 
     @Get()
     @FindAllRateLimit()
-    @Cache('vacunos', CACHE_BASE)
     async findAll(
         @Query(CustomValidationPipe({ concise: true })) query: FindVacunosQueryDto,
         @GetUser() user: AuthenticatedUser
@@ -69,7 +67,6 @@ export class VacunosController {
 
     @Get('gestiones')
     @FindAllRateLimit()
-    @Cache('vacunos', CACHE_BASE)
     obtenerGestiones(
         @GetUser() user: AuthenticatedUser,
     ): Promise<GestionesDisponiblesResult> {
@@ -78,7 +75,6 @@ export class VacunosController {
 
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('vacunos', CACHE_BASE)
     async findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

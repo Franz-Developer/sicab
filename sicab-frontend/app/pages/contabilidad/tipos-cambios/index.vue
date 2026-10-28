@@ -66,6 +66,47 @@ i<!-- C:\sistemas\sicab\sicab-frontend\app\pages\contabilidad\tipos-cambios\inde
                                 <BaseSelect v-model="filters.gestion" :options="gestionesOptions" option-label="label"
                                     option-value="value" placeholder="Todas las gestiones" size="sm" filter show-clear
                                     appendTo="body" @update:model-value="aplicarFiltros" class="w-full" />
+
+                                <!-- NUEVO INDICADOR DE ESTADO -->
+                                <div v-if="cargandoEstadoGestion"
+                                    class="mt-1 flex items-center gap-1 text-[10px] text-slate-500">
+                                    <i class="pi pi-spin pi-spinner"></i> Verificando estado...
+                                </div>
+
+                                <div v-else-if="estadoGestion"
+                                    class="mt-1 p-1.5 rounded-md text-[10px] font-bold flex flex-col gap-0.5"
+                                    :class="estadoMonedaSeleccionada
+                                        ? (estadoMonedaSeleccionada.esta_completa ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200')
+                                        : (estadoGestion.esta_completa_global ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200')">
+
+                                    <div class="flex items-center gap-1">
+                                        <i :class="estadoMonedaSeleccionada
+                                            ? (estadoMonedaSeleccionada.esta_completa ? 'pi pi-check-circle' : 'pi pi-exclamation-triangle')
+                                            : (estadoGestion.esta_completa_global ? 'pi pi-check-circle' : 'pi pi-info-circle')"></i>
+
+                                        <span v-if="estadoMonedaSeleccionada">
+                                            {{ estadoMonedaSeleccionada.esta_completa
+                                                ? `La gestión ${estadoGestion.gestion} está completa para
+                                            ${estadoMonedaSeleccionada.destino_moneda_label}.`
+                                                : `Faltan ${estadoMonedaSeleccionada.dias_faltantes} días de
+                                            ${estadoMonedaSeleccionada.total_dias_esperados} para
+                                            ${estadoMonedaSeleccionada.destino_moneda_label}.`
+                                            }}
+                                        </span>
+                                        <span v-else>
+                                            {{ estadoGestion.mensaje }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Detalle de monedas incompletas si no hay filtro específico -->
+                                    <div v-if="!estadoMonedaSeleccionada && !estadoGestion.esta_completa_global"
+                                        class="text-[9px] font-normal opacity-80 pl-4 space-y-0.5">
+                                        <div v-for="m in estadoGestion.monedas.filter((m: any) => !m.esta_completa)"
+                                            :key="m.destino_moneda_id">
+                                            {{ m.destino_moneda_label }}: faltan {{ m.dias_faltantes }} días
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </template>
                     </FilterBar>
@@ -473,7 +514,7 @@ i<!-- C:\sistemas\sicab\sicab-frontend\app\pages\contabilidad\tipos-cambios\inde
 
     interface ValoresIniciales {
         fecha_cotizacion: string;
-        factor_compra: number;
+        factor_compra: number | null;
         factor_venta: number;
         origen_moneda_id: number;
         destino_moneda_id: number;
@@ -508,6 +549,8 @@ i<!-- C:\sistemas\sicab\sicab-frontend\app\pages\contabilidad\tipos-cambios\inde
 
     // === ESTADO PARA EL FILTRO DE GESTIÓN ===
     const gestionesDisponiblesFiltro = ref<number[]>([]);
+    const estadoGestion = ref<any>(null);
+    const cargandoEstadoGestion = ref(false);
 
     const gestionesOptions = computed(() =>
         gestionesDisponiblesFiltro.value.map(g => ({
@@ -526,6 +569,36 @@ i<!-- C:\sistemas\sicab\sicab-frontend\app\pages\contabilidad\tipos-cambios\inde
             console.error('Error al cargar gestiones para filtros:', error);
         }
     };
+
+    const consultarEstadoGestion = async (gestion: number | null) => {
+        if (!gestion) {
+            estadoGestion.value = null;
+            return;
+        }
+
+        cargandoEstadoGestion.value = true;
+        try {
+            const res = await $api(`/tipos-cambios/gestiones/${gestion}/estado`, { method: 'GET' });
+            estadoGestion.value = res;
+        } catch (error) {
+            console.error('Error al consultar estado de gestión:', error);
+            estadoGestion.value = null;
+        } finally {
+            cargandoEstadoGestion.value = false;
+        }
+    };
+
+    const estadoMonedaSeleccionada = computed(() => {
+        if (!estadoGestion.value) return null;
+
+        if (filters.value.destino_moneda_id) {
+            return estadoGestion.value.monedas.find(
+                (m: any) => m.destino_moneda_id === Number(filters.value.destino_moneda_id)
+            ) ?? null;
+        }
+
+        return null;
+    });
 
     const {
         items, loading, totalRecords, filters, lazyParams,
@@ -728,6 +801,32 @@ i<!-- C:\sistemas\sicab\sicab-frontend\app\pages\contabilidad\tipos-cambios\inde
         onSearch();
     };
 
+    watch([() => filters.value.gestion, () => filters.value.destino_moneda_id],
+        ([nuevaGestion]) => {
+            consultarEstadoGestion(nuevaGestion);
+        }
+    );
+
+    watch(() => formObj.value.destino_moneda_id, async (nuevoDestino, viejoDestino) => {
+        if (!dialog.value || isUpdate.value) return;
+        if (!nuevoDestino || nuevoDestino === viejoDestino) return;
+
+        const valores = await cargarValoresIniciales(Number(nuevoDestino));
+        if (valores) {
+            let fechaLimpia = valores.fecha_cotizacion;
+            if (fechaLimpia && fechaLimpia.includes('T')) {
+                fechaLimpia = fechaLimpia.split('T')[0] as string;
+            }
+
+            formObj.value = {
+                ...formObj.value,
+                factor_compra: valores.factor_compra,
+                factor_venta: valores.factor_venta,
+                fecha_cotizacion: fechaLimpia || '',
+            };
+        }
+    });
+
     watch(dialog, async (isOpen) => {
         if (!isOpen) return;
 
@@ -759,16 +858,19 @@ i<!-- C:\sistemas\sicab\sicab-frontend\app\pages\contabilidad\tipos-cambios\inde
         { header: 'ACCIONES', template: 'body-acciones', sortable: false, class: '!text-center !w-28' },
     ];
 
-    const cargarValoresIniciales = async (): Promise<ValoresIniciales | null> => {
+    const cargarValoresIniciales = async (destinoMonedaId: number): Promise<ValoresIniciales | null> => {
         try {
-            const res = await $api('/tipos-cambios/valores-iniciales', { method: 'GET' });
+            const res = await $api('/tipos-cambios/valores-iniciales', {
+                method: 'GET',
+                params: { destino_moneda_id: destinoMonedaId }
+            });
             if (!res) return null;
             return {
                 fecha_cotizacion: String(res.fecha_cotizacion ?? ''),
-                factor_compra: Number(res.factor_compra ?? 0),
+                factor_compra: res.factor_compra ? Number(res.factor_compra) : null,
                 factor_venta: Number(res.factor_venta ?? 0),
                 origen_moneda_id: Number(res.origen_moneda_id ?? TipoMoneda.BOLIVIANO),
-                destino_moneda_id: Number(res.destino_moneda_id ?? TipoMoneda.UFV),
+                destino_moneda_id: Number(res.destino_moneda_id ?? destinoMonedaId),
             };
         } catch (error: any) {
             notify('error', 'Error al cargar valores iniciales',
@@ -789,16 +891,21 @@ i<!-- C:\sistemas\sicab\sicab-frontend\app\pages\contabilidad\tipos-cambios\inde
         submitted.value = false;
         touched.value = {};
 
-        const valores = await cargarValoresIniciales();
+        const valores = await cargarValoresIniciales(Number(formObj.value.destino_moneda_id));
 
         if (valores) {
+            let fechaLimpia = valores.fecha_cotizacion;
+            if (fechaLimpia && fechaLimpia.includes('T')) {
+                fechaLimpia = fechaLimpia.split('T')[0] as string;
+            }
+
             formObj.value = {
                 tipo_cambio_id: null,
                 origen_moneda_id: valores.origen_moneda_id,
                 destino_moneda_id: valores.destino_moneda_id,
                 factor_compra: valores.factor_compra,
                 factor_venta: valores.factor_venta,
-                fecha_cotizacion: valores.fecha_cotizacion,
+                fecha_cotizacion: fechaLimpia || '',
             };
         }
 
@@ -1005,4 +1112,3 @@ i<!-- C:\sistemas\sicab\sicab-frontend\app\pages\contabilidad\tipos-cambios\inde
         onSearch();
     });
 </script>
-

@@ -8,6 +8,8 @@ export interface AmortizacionesResumen {
     total_amortizado_rango_ufv: number;
     total_amort_acumulada_ufv: number;
     total_valor_libro_ufv: number;
+    cantidad_vacunos: number;
+    cantidad_registros: number;
 }
 
 export interface AmortizacionDetalle {
@@ -16,6 +18,13 @@ export interface AmortizacionDetalle {
     arete: string;
     nombre: string | null;
     periodo: string;
+    gestion: number;
+    empresa_id: number;
+    empresa: string;
+    sucursal_id: number;
+    sucursal: string;
+    raza: string;
+    categoria: string;
     valor_inicial: number;
     amortizacion_periodo: number;
     amortizacion_acumulada: number;
@@ -25,10 +34,14 @@ export interface AmortizacionDetalle {
     amortizacion_acumulada_ufv: number | null;
     valor_libro_ufv: number | null;
     cotizacion_ufv_aplicada: number | null;
+    fecha_cotizacion_ufv: string | null;
+    vida_util_anios: number | null;
+    tasa_amortizacion: number | null;
     estado_id: number;
     estado_registro: string;
-    sucursal: string;
-    empresa: string;
+    usuario_operacion: string | null;
+    fecha_registro: string;
+    fecha_actualizacion: string | null;
 }
 
 export interface AmortizacionesResponse {

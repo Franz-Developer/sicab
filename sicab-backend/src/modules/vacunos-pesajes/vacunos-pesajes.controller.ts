@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\vacunos-pesajes\vacunos-pesajes.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -33,7 +32,6 @@ export class VacunosPesajesController {
 
     @Get()
     @FindAllRateLimit()
-    @Cache('vacunos_pesajes', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true })) query: FindVacunosPesajesQueryDto,
         @GetUser() user: AuthenticatedUser
@@ -43,7 +41,6 @@ export class VacunosPesajesController {
 
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('vacunos_pesajes', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

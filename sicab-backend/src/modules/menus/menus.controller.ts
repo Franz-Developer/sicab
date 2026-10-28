@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\menus\menus.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -24,7 +23,6 @@ export class MenusController {
     // GET /menus - Listar menus
     @Get()
     @FindAllRateLimit()
-    @Cache('menus', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true }))
         query: FindMenusQueryDto,
@@ -36,7 +34,6 @@ export class MenusController {
     // GET /menus/:id - Obtener un menu
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('menus', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

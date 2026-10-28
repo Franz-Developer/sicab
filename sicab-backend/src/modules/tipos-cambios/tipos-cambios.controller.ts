@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\tipos-cambios\tipos-cambios.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -16,6 +15,7 @@ import { TiposCambiosService, GestionesDisponiblesResult, ValoresInicialesResult
 import { UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImportarExcelResponseDto } from './dto/importar-excel-response.dto';
+import { EstadoGestionResponseDto } from './dto/estado-gestion-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('tipos-cambios')
@@ -36,7 +36,6 @@ export class TiposCambiosController {
 
     @Get()
     @FindAllRateLimit()
-    @Cache('tipos_cambios', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true })) query: FindTiposCambiosQueryDto,
         @GetUser() user: AuthenticatedUser
@@ -46,7 +45,6 @@ export class TiposCambiosController {
 
     @Get('gestiones')
     @FindAllRateLimit()
-    @Cache('tipos_cambios', CACHE_BASE)
     obtenerGestiones(
         @GetUser() user: AuthenticatedUser,
     ): Promise<GestionesDisponiblesResult> {
@@ -55,16 +53,27 @@ export class TiposCambiosController {
 
     @Get('valores-iniciales')
     @FindAllRateLimit()
-    @Cache('tipos_cambios', CACHE_BASE)
     obtenerValoresIniciales(
         @GetUser() user: AuthenticatedUser,
+        @Query('destino_moneda_id') destino_moneda_id?: number,
     ): Promise<ValoresInicialesResult> {
-        return this.tiposCambiosService.obtenerValoresIniciales(user.usuario_id);
+        return this.tiposCambiosService.obtenerValoresIniciales(
+            user.usuario_id,
+            destino_moneda_id ? Number(destino_moneda_id) : undefined
+        );
+    }
+
+    @Get('gestiones/:gestion/estado')
+    @FindOneRateLimit()
+    obtenerEstadoGestion(
+        @Param('gestion', ParseIntPipe) gestion: number,
+        @GetUser() user: AuthenticatedUser,
+    ): Promise<EstadoGestionResponseDto> {
+        return this.tiposCambiosService.obtenerEstadoGestion(gestion, user.usuario_id);
     }
 
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('tipos_cambios', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

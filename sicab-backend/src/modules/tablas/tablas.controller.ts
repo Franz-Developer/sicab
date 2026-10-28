@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\tablas\tablas.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -23,7 +22,6 @@ export class TablasController {
 
     @Get()
     @FindAllRateLimit()
-    @Cache('tablas', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true }))
         query: FindTablasQueryDto,
@@ -34,7 +32,6 @@ export class TablasController {
 
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('tablas', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

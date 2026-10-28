@@ -13,6 +13,12 @@ export class ProduccionQueryDto {
 
     @IsOptional()
     @Type(() => Number)
+    @IsInt({ message: 'empresa_id debe ser un número entero.' })
+    @Min(1, { message: 'empresa_id debe ser mayor a 0.' })
+    empresa_id?: number;
+
+    @IsOptional()
+    @Type(() => Number)
     @IsInt({ message: 'sucursal_id debe ser un número entero.' })
     @Min(1, { message: 'sucursal_id debe ser mayor a 0.' })
     sucursal_id?: number;

@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\roles-menus\roles-menus.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -26,7 +25,6 @@ export class RolesMenusController {
     // GET /roles-menus - Listar relaciones rol-menú
     @Get()
     @FindAllRateLimit()
-    @Cache('roles_menus', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true }))
         query: FindRolesMenusQueryDto,
@@ -38,7 +36,6 @@ export class RolesMenusController {
     // GET /roles-menus/:id - Obtener una relación por ID
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('roles_menus', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

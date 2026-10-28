@@ -2,7 +2,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, ArchiveRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -60,7 +59,6 @@ export class RazasController {
 
     @Get()
     @FindAllRateLimit()
-    @Cache('razas', CACHE_BASE)
     async findAll(
         @Query(CustomValidationPipe({ concise: true }))
         query: FindRazasQueryDto,
@@ -73,7 +71,6 @@ export class RazasController {
 
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('razas', CACHE_BASE)
     async findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

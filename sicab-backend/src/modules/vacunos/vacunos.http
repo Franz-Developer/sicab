@@ -292,7 +292,7 @@ Authorization: Bearer {{authToken}}
 
 
 ### OBTENER VACUNO POR ID
-GET {{baseUrl_vacunos}}/64
+GET {{baseUrl_vacunos}}/32
 Authorization: Bearer {{authToken}}
 
 
@@ -301,5 +301,5 @@ GET {{baseUrl_vacunos}}?limit=10&offset=0&sortField=vacuno_id&sortOrder=-1&exact
 Authorization: Bearer {{authToken}}
 
 ### BUSCAR VACUNO POR ARETE (Exacto)
-GET {{baseUrl_vacunos}}?estado_id=1000&arete=000002
+GET {{baseUrl_vacunos}}?estado_id=1000&arete=000031
 Authorization: Bearer {{authToken}}

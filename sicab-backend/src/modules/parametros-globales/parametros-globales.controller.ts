@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\parametros-globales\parametros-globales.controller.ts
 import { Controller, Get, Body, Patch, Param, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { UpdateRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -23,7 +22,6 @@ export class ParametrosGlobalesController {
     // GET /parametros_globales - Listar parámetros
     @Get()
     @FindAllRateLimit()
-    @Cache('parametros_globales', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true }))
         query: FindParametrosGlobalesQueryDto,
@@ -35,7 +33,6 @@ export class ParametrosGlobalesController {
     // GET /parametros_globales/:id - Obtener un parámetro
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('parametros_globales', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

@@ -2,7 +2,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Query, ParseIntPipe, UseGuards, UploadedFile, UseInterceptors, HttpStatus } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, ArchiveRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -60,7 +59,6 @@ export class UsuariosController {
 
     @Get()
     @FindAllRateLimit()
-    @Cache('usuarios', CACHE_BASE)
     async findAll(
         @Query(CustomValidationPipe({ concise: true }))
         query: FindUsuariosQueryDto,
@@ -84,7 +82,6 @@ export class UsuariosController {
 
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('usuarios', CACHE_BASE)
     async findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

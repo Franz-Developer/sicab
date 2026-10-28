@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\vacunos-faenas\vacunos-faenas.controller.ts
 import { Controller, Get, Post, Body, Param, Query, ParseIntPipe, UseGuards, Patch } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, FindAllRateLimit, FindOneRateLimit, UpdateRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -21,7 +20,6 @@ export class VacunosFaenasController {
 
     @Get()
     @FindAllRateLimit()
-    @Cache('vacunos_faenas', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true })) query: FindVacunosFaenasQueryDto,
         @GetUser() user: AuthenticatedUser
@@ -31,7 +29,6 @@ export class VacunosFaenasController {
 
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('vacunos_faenas', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

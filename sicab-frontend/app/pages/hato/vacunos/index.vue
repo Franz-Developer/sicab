@@ -557,7 +557,7 @@
     </BaseDialog>
 
     <!-- ═══════════ DIALOG CAMBIO DE ESTADO ═══════════ -->
-    <BaseDialog v-model:visible="showEstadoDialog" dialogClass="" width="w-[95vw] sm:w-[500px]" maxHeight="85vh"
+    <BaseDialog v-model:visible="showEstadoDialog" dialogClass="" width="w-[95vw] sm:w-[640px]" maxHeight="88vh"
         :modal="true" :closable="!loadingEstado">
         <template #header>
             <div class="flex items-center gap-3">
@@ -566,12 +566,84 @@
                 </div>
                 <div>
                     <h3 class="text-sm font-black text-amber-900 uppercase">Cambiar Estado del Vacuno</h3>
-                    <p class="text-xs text-amber-700">Arete: <b>{{ vacunoEstado.arete }}</b></p>
+                    <p class="text-xs text-amber-700">
+                        Actualice el ciclo de vida del animal <b>#{{ vacunoEstado.arete }}</b>
+                    </p>
                 </div>
             </div>
         </template>
 
         <div class="space-y-4">
+            <!-- FICHA TÉCNICA DEL VACUNO -->
+            <div class="bg-blue-50/60 border border-blue-200 rounded-xl p-3 shadow-sm">
+                <div class="flex gap-3 items-stretch">
+
+
+                    <!-- Grid de datos -->
+                    <div class="flex-1 grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-2 min-w-0">
+                        <!-- Arete / Nombre -->
+                        <div
+                            class="col-span-2 md:col-span-1 border-b md:border-b-0 md:border-r border-blue-200 pb-2 md:pb-0 md:pr-2 min-w-0">
+                            <span class="text-[9px] font-bold text-blue-500 uppercase tracking-wider block">Arete /
+                                Nombre</span>
+                            <span class="text-sm font-black text-blue-900 block">{{ vacunoEstado.arete }}</span>
+                            <span class="text-xs font-semibold text-slate-600 truncate block"
+                                :title="vacunoEstado.nombre || 'Sin nombre'">
+                                {{ vacunoEstado.nombre || 'Sin nombre' }}
+                            </span>
+                        </div>
+
+                        <!-- Sexo / Raza -->
+                        <div class="border-b md:border-b-0 md:border-r border-blue-200 pb-2 md:pb-0 md:pr-2 min-w-0">
+                            <span class="text-[9px] font-bold text-blue-500 uppercase tracking-wider block">Sexo /
+                                Raza</span>
+                            <span class="text-[11px] font-bold text-slate-700 block truncate">
+                                {{ vacunoEstado.sexo_label || '—' }}
+                            </span>
+                            <span class="text-[10px] text-slate-500 block truncate" :title="vacunoEstado.raza_nombre">
+                                {{ vacunoEstado.raza_nombre || '—' }}
+                            </span>
+                        </div>
+
+                        <!-- Edad / Peso -->
+                        <div class="min-w-0">
+                            <span class="text-[9px] font-bold text-blue-500 uppercase tracking-wider block">Edad /
+                                Peso</span>
+                            <span class="text-[11px] font-bold text-slate-700 block truncate">
+                                {{ formatEdad(vacunoEstado.edad_anios, vacunoEstado.edad_meses) }}
+                            </span>
+                            <span class="text-[10px] text-slate-500 block truncate">
+                                {{ vacunoEstado.peso_actual != null ? `${vacunoEstado.peso_actual} kg` : '—' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Segunda fila: Categoría + Estado actual + Ingreso -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3 pt-3 border-t border-blue-200">
+                    <div class="min-w-0">
+                        <span class="text-[9px] font-bold text-blue-500 uppercase tracking-wider block">Categoría</span>
+                        <Tag :value="vacunoEstado.categoria_vacuno_nombre || '—'" severity="info"
+                            class="text-[9px] font-bold uppercase px-1.5 py-0.5 mt-0.5" />
+                    </div>
+                    <div class="min-w-0">
+                        <span class="text-[9px] font-bold text-blue-500 uppercase tracking-wider block">Estado
+                            Actual</span>
+                        <Tag :value="vacunoEstado.estado_vacuno_label || '—'"
+                            :severity="severityEstadoVacuno(Number(vacunoEstado.estado_vacuno_id))"
+                            class="text-[9px] font-bold uppercase px-1.5 py-0.5 mt-0.5" />
+                    </div>
+                    <div class="min-w-0">
+                        <span class="text-[9px] font-bold text-blue-500 uppercase tracking-wider block">Fecha
+                            Ingreso</span>
+                        <span class="text-[11px] font-bold text-slate-700 block">
+                            {{ vacunoEstado.fecha_ingreso || '—' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORMULARIO DE CAMBIO DE ESTADO -->
             <div class="panel-contrast !p-3">
                 <div class="mb-3">
                     <label class="block text-[10px] font-bold text-slate-600 mb-0.5 uppercase">
@@ -585,6 +657,7 @@
                     </small>
                 </div>
 
+                <!-- Datos de salida si el estado destino es FINAL -->
                 <div v-if="esEstadoFinal(Number(formEstado.estado_vacuno_id))"
                     class="bg-amber-50 p-3 rounded-xl border border-amber-200 flex flex-col gap-3 mt-3">
                     <p class="text-[11px] font-bold text-amber-800">
@@ -607,15 +680,17 @@
                         <label class="block text-[10px] font-bold text-slate-600 mb-0.5 uppercase">
                             Peso Salida (kg) <span class="text-red-500">*</span>
                         </label>
-                        <BaseInput v-model.number="formEstado.peso_salida" type="number" step="0.01" min="0" size="sm" />
+                        <BaseInput v-model.number="formEstado.peso_salida" type="number" step="0.01" min="0"
+                            size="sm" />
                     </div>
 
                     <div v-if="Number(formEstado.estado_vacuno_id) === EstadoVacuno.VENDIDO ||
-                              Number(formEstado.estado_vacuno_id) === EstadoVacuno.FAENADO">
+                        Number(formEstado.estado_vacuno_id) === EstadoVacuno.FAENADO">
                         <label class="block text-[10px] font-bold text-slate-600 mb-0.5 uppercase">
                             Precio Venta (Bs) <span class="text-red-500">*</span>
                         </label>
-                        <BaseInput v-model.number="formEstado.precio_venta" type="number" step="0.01" min="0" size="sm" />
+                        <BaseInput v-model.number="formEstado.precio_venta" type="number" step="0.01" min="0"
+                            size="sm" />
                     </div>
 
                     <div v-if="Number(formEstado.estado_vacuno_id) === EstadoVacuno.MUERTO">

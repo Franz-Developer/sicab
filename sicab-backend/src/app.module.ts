@@ -9,8 +9,6 @@ import { LoggerModule } from 'nestjs-pino';
 import { CommonModule } from './common/common.module';
 import { ValidationLogInterceptor } from './common/decorators/validation-message.decorator';
 import { UserValidationGuard } from './common/guards/user-validation.guard';
-import { CacheInterceptor } from './common/interceptors/cache.interceptor';
-import { CacheInvalidationInterceptor } from './common/interceptors/cache-invalidation.interceptor';
 import { typeOrmConfig } from './config/database.config';
 import { loggerConfig } from './config/logger.config';
 import { AuthModule } from './modules/auth/auth.module';
@@ -103,14 +101,6 @@ import { VacunosFaenasModule } from './modules/vacunos-faenas/vacunos-faenas.mod
         {
             provide: APP_GUARD,
             useClass: UserValidationGuard,
-        },
-        {
-            provide: APP_INTERCEPTOR,
-            useClass: CacheInterceptor,
-        },
-        {
-            provide: APP_INTERCEPTOR,
-            useClass: CacheInvalidationInterceptor,
         },
         {
             provide: APP_INTERCEPTOR,

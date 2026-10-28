@@ -23,21 +23,8 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
 ORDER BY kcu.table_name;
 */
 
-SELECT
-    v.arete,
-    p.fecha_pesaje,
-    p.peso,
-    p.pesaje_id,
-    v.sucursal_id,
-    s.empresa_id,
-    p.estado_id,
-    v.estado_vacuno_id
-FROM
-    vacunos_pesajes p
-INNER JOIN
-    vacunos v ON v.vacuno_id = p.vacuno_id
-INNER JOIN
-    sucursales s ON s.sucursal_id = v.sucursal_id
-ORDER BY
-    p.pesaje_id DESC
-LIMIT 15;
+UPDATE vacunos set foto = '32.jpg' WHERE vacuno_id = 32;
+
+SELECT *
+FROM vacunos
+ORDER BY vacuno_id ASC;

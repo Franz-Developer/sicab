@@ -5,6 +5,7 @@ import { ESTADO_METADATA, ESTADOS_CONSULTA } from '../../../common/constants/est
 import { BasePaginationQueryDto } from '../../../common/dto/base-pagination-query.dto';
 import { PaginatedResult } from '../../../common/interfaces/pagination.interface';
 import { createEnumMessage } from '../../../common/utils/validation-helper.util';
+import { IsCompareFields } from '../../../common/validators/compare-fields.validator';
 
 export class FindAmortizacionesVacunosQueryDto extends BasePaginationQueryDto {
     @IsOptional()
@@ -67,6 +68,7 @@ export class FindAmortizacionesVacunosQueryDto extends BasePaginationQueryDto {
     @IsInt({ message: 'gestion_hasta debe ser un número entero.' })
     @Min(2023, { message: 'gestion_hasta debe ser mayor o igual a 2023.' })
     @Max(2100, { message: 'gestion_hasta debe ser menor o igual a 2100.' })
+    @IsCompareFields('gestion_desde', 'lte', 'gestion_hasta')
     gestion_hasta?: number;
 
     static getCampos(): string[] {
@@ -101,7 +103,6 @@ export class FindAmortizacionesVacunosQueryDto extends BasePaginationQueryDto {
             `${alias}.fecha_cotizacion_ufv`,
             `${alias}.vida_util_anios`,
             `${alias}.tasa_amortizacion`,
-            `${alias}.observaciones`,
             `${alias}.estado_id`,
             `${alias}.usuario_id_registro`,
             `${alias}.usuario_id_actualizacion`,
@@ -114,7 +115,6 @@ export class FindAmortizacionesVacunosQueryDto extends BasePaginationQueryDto {
 
     static getCamposParaQ(): string[] {
         return [
-            'observaciones',
             'v.arete',
             'v.nombre',
             'suc.sucursal',
@@ -133,6 +133,7 @@ export class FindAmortizacionesVacunosQueryDto extends BasePaginationQueryDto {
             'sucursal_id',
             'sucursal_nombre',
             'sucursal_codigo',
+            'empresa_id',
             'empresa_nombre',
             'empresa_codigo',
             'gestion',
@@ -183,7 +184,6 @@ export class FindAmortizacionesVacunosQueryDto extends BasePaginationQueryDto {
             'fecha_cotizacion_ufv': `${alias}.fecha_cotizacion_ufv`,
             'vida_util_anios': `${alias}.vida_util_anios`,
             'tasa_amortizacion': `${alias}.tasa_amortizacion`,
-            'observaciones': `${alias}.observaciones`,
             'estado_id': `${alias}.estado_id`,
             'usuario_id_registro': `${alias}.usuario_id_registro`,
             'usuario_id_actualizacion': `${alias}.usuario_id_actualizacion`,

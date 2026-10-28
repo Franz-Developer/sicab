@@ -2,7 +2,8 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
-import { ESTADO_ACTIVO, ESTADO_HISTORICO, ESTADO_BORRADO, TipoMoneda } from '../../common/constants/estados.constant';
+import { ESTADO_ACTIVO, ESTADO_HISTORICO, ESTADO_BORRADO, TIPO_MONEDA_METADATA, TipoMoneda } from '../../common/constants/estados.constant';
+import { EstadoGestionResponseDto, EstadoGestionMonedaDto } from './dto/estado-gestion-response.dto';
 import { DomainException } from '../../common/exceptions/domain.exception';
 import { BaseService, BaseServiceConfig } from '../../common/services/base.service';
 import { runInTransaction } from '../../common/utils/transaction.helper';
@@ -100,17 +101,20 @@ export class TiposCambiosService extends BaseService {
     private get nombreTabla(): string { return this.config.nombreTabla; }
     private get campoPK(): string { return this.config.campoPK; }
 
-    async obtenerValoresIniciales(usuarioId: number): Promise<ValoresInicialesResult> {
+    async obtenerValoresIniciales(usuarioId: number, destinoMonedaId?: number): Promise<ValoresInicialesResult> {
         await this.tablaValidador.validarPermisoTabla(usuarioId, this.nombreTabla, 'leer');
 
         try {
+            const destinoId = destinoMonedaId || TipoMoneda.UFV;
+
             const ultimaTasaRows = await this.dataSource.query(
                 `SELECT origen_moneda_id, destino_moneda_id, fecha_cotizacion::text AS fecha_max, factor_compra, factor_venta
-                 FROM tipos_cambios
-                 WHERE estado_id IN ($1, $2)
-                 ORDER BY tipo_cambio_id DESC
-                 LIMIT 1`,
-                [ESTADO_ACTIVO, ESTADO_HISTORICO]
+                FROM tipos_cambios
+                WHERE estado_id IN ($1, $2)
+                    AND destino_moneda_id = $3
+                ORDER BY fecha_cotizacion DESC, tipo_cambio_id DESC
+                LIMIT 1`,
+                [ESTADO_ACTIVO, ESTADO_HISTORICO, destinoId]
             );
 
             const ultimaTasa = ultimaTasaRows[0];
@@ -122,33 +126,21 @@ export class TiposCambiosService extends BaseService {
 
                 return {
                     fecha_cotizacion: fechaSiguienteStr,
-                    factor_compra: Number(ultimaTasa.factor_compra),
+                    factor_compra: ultimaTasa.factor_compra ? Number(ultimaTasa.factor_compra) : null,
                     factor_venta: Number(ultimaTasa.factor_venta),
                     origen_moneda_id: Number(ultimaTasa.origen_moneda_id),
                     destino_moneda_id: Number(ultimaTasa.destino_moneda_id),
                 };
             }
 
-            const configInicial = await this.configuracionService
-                .obtenerValorTipado<ValoresInicialesResult>('valores_iniciales_tipo_cambio');
-
-            if (configInicial) {
-                return {
-                    fecha_cotizacion: configInicial.fecha_cotizacion,
-                    factor_compra: Number(configInicial.factor_compra),
-                    factor_venta: Number(configInicial.factor_venta),
-                    origen_moneda_id: TipoMoneda.BOLIVIANO,
-                    destino_moneda_id: TipoMoneda.UFV,
-                };
-            }
-
             return {
-                fecha_cotizacion: new Date().toISOString().split('T')[0] as string,
-                factor_compra: null,
-                factor_venta: 1.0000,
+                fecha_cotizacion: '2024-01-01',
+                factor_compra: 0,
+                factor_venta: 0,
                 origen_moneda_id: TipoMoneda.BOLIVIANO,
-                destino_moneda_id: TipoMoneda.UFV,
+                destino_moneda_id: destinoId,
             };
+
         } catch (error: unknown) {
             if (isDomainException(error)) throw error;
             const errorMessage = getErrorMessage(error);
@@ -1110,5 +1102,63 @@ export class TiposCambiosService extends BaseService {
                 detalles_errores: detallesErrores,
             };
         });
+    }
+
+    async obtenerEstadoGestion(
+        gestion: number,
+        usuarioId: number,
+    ): Promise<EstadoGestionResponseDto> {
+        await this.tablaValidador.validarPermisoTabla(usuarioId, this.nombreTabla, 'leer');
+
+        const esBisiesto = (gestion % 4 === 0 && gestion % 100 !== 0) || (gestion % 400 === 0);
+        const totalDiasEsperados = esBisiesto ? 366 : 365;
+        const monedasDestino = [TipoMoneda.DOLAR, TipoMoneda.EURO, TipoMoneda.UFV];
+
+        const resultados: EstadoGestionMonedaDto[] = [];
+
+        for (const destinoId of monedasDestino) {
+            const registradosRows = await this.dataSource.query(
+                `SELECT COUNT(DISTINCT fecha_cotizacion)::int AS total
+                FROM tipos_cambios
+                WHERE EXTRACT(YEAR FROM fecha_cotizacion) = $1
+                AND origen_moneda_id = $2
+                AND destino_moneda_id = $3
+                AND estado_id IN ($4, $5)`,
+                [
+                    gestion,
+                    TipoMoneda.BOLIVIANO,
+                    destinoId,
+                    ESTADO_ACTIVO,
+                    ESTADO_HISTORICO,
+                ],
+            );
+
+            const totalDiasRegistrados = Number(registradosRows[0]?.total ?? 0);
+            const diasFaltantes = Math.max(0, totalDiasEsperados - totalDiasRegistrados);
+
+            const meta = TIPO_MONEDA_METADATA[destinoId as TipoMoneda];
+
+            resultados.push({
+                destino_moneda_id: destinoId,
+                destino_moneda_label: meta?.label ?? `Moneda ${destinoId}`,
+                destino_moneda_abreviatura: meta?.abreviatura ?? '',
+                total_dias_esperados: totalDiasEsperados,
+                total_dias_registrados: totalDiasRegistrados,
+                dias_faltantes: diasFaltantes,
+                esta_completa: totalDiasRegistrados >= totalDiasEsperados,
+            });
+        }
+
+        const estaCompletaGlobal = resultados.every(r => r.esta_completa);
+
+        return {
+            gestion,
+            es_bisiesto: esBisiesto,
+            monedas: resultados,
+            esta_completa_global: estaCompletaGlobal,
+            mensaje: estaCompletaGlobal
+                ? `La gestión ${gestion} está completa para todas las monedas.`
+                : `La gestión ${gestion} está incompleta para ${resultados.filter(r => !r.esta_completa).length} moneda(s).`,
+        };
     }
 }

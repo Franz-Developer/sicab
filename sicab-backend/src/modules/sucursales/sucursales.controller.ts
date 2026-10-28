@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\sucursales\sucursales.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, ArchiveRateLimit, FindAllRateLimit, FindOneRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -24,7 +23,6 @@ export class SucursalesController {
     // GET /sucursales - Listar sucursales
     @Get()
     @FindAllRateLimit()
-    @Cache('sucursales', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true }))
         query: FindSucursalesQueryDto,
@@ -46,7 +44,6 @@ export class SucursalesController {
     // GET /sucursales/:id - Obtener una sucursal por ID
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('sucursales', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

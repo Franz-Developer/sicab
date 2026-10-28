@@ -32,7 +32,29 @@ export class VacunosFaenasService extends BaseService {
                 onCondition: 'v.vacuno_id = t.vacuno_id',
                 selectColumns: [
                     'v.arete AS vacuno_arete',
-                    'v.nombre AS vacuno_nombre'
+                    'v.nombre AS vacuno_nombre',
+                    'v.sucursal_id'
+                ],
+                type: 'INNER'
+            },
+            {
+                table: 'sucursales',
+                alias: 'suc',
+                onCondition: 'suc.sucursal_id = v.sucursal_id',
+                selectColumns: [
+                    'suc.sucursal AS sucursal_nombre',
+                    'suc.codigo AS sucursal_codigo',
+                    'suc.empresa_id'
+                ],
+                type: 'INNER'
+            },
+            {
+                table: 'empresas',
+                alias: 'emp',
+                onCondition: 'emp.empresa_id = suc.empresa_id',
+                selectColumns: [
+                    'emp.empresa AS empresa_nombre',
+                    'emp.codigo AS empresa_codigo'
                 ],
                 type: 'INNER'
             }
@@ -41,6 +63,22 @@ export class VacunosFaenasService extends BaseService {
             { nombreCampo: 'vacuno_id', nombreColumna: 'vacuno_id', tipoDatoFiltro: 'number', operador: 'eq' },
             { nombreCampo: 'fecha_faena_desde', nombreColumna: 'fecha_faena', tipoDatoFiltro: 'date', operador: 'gte' },
             { nombreCampo: 'fecha_faena_hasta', nombreColumna: 'fecha_faena', tipoDatoFiltro: 'date', operador: 'lte' },
+        ],
+        camposFiltroEspecial: [
+            {
+                nombreCampo: 'sucursal_id',
+                handler: (value, _queryDto, _alias, paramIndexRef, params) => {
+                    params.push(value);
+                    return `v.sucursal_id = $${paramIndexRef.current++}`;
+                }
+            },
+            {
+                nombreCampo: 'empresa_id',
+                handler: (value, _queryDto, _alias, paramIndexRef, params) => {
+                    params.push(value);
+                    return `suc.empresa_id = $${paramIndexRef.current++}`;
+                }
+            }
         ],
         configuracionOrden: {
             campoOrdenPorDefecto: 'fecha_faena',
@@ -101,6 +139,11 @@ export class VacunosFaenasService extends BaseService {
             vacuno.estado_id = Estado.HISTORICO;
             vacuno.usuario_id_actualizacion = usuarioId;
             vacuno.fecha_actualizacion = new Date();
+            vacuno.fecha_salida = new Date(dto.fecha_faena);
+            vacuno.motivo_salida = 'FAENA';
+            vacuno.peso_salida = dto.peso_vivo_faena;
+            vacuno.precio_venta = 0;
+            vacuno.causa_muerte = null;
             await manager.save(vacuno);
 
             // 6. Pasar la faena a histórico (R.2)

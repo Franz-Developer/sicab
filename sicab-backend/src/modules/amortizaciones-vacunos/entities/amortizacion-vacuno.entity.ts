@@ -79,19 +79,19 @@ export class AmortizacionVacuno extends BaseAuditEntity {
     @Column({ name: 'valor_libro', type: 'decimal', precision: 14, scale: 2, default: 0, transformer: decimalTransformer })
     valor_libro!: number;
 
-    @Column({ name: 'valor_inicial_ufv', type: 'decimal', precision: 14, scale: 4, nullable: true, transformer: decimalTransformer })
+    @Column({ name: 'valor_inicial_ufv', type: 'decimal', precision: 14, scale: 5, nullable: true, transformer: decimalTransformer })
     valor_inicial_ufv?: number | null;
 
-    @Column({ name: 'valor_residual_ufv', type: 'decimal', precision: 14, scale: 4, nullable: true, transformer: decimalTransformer })
+    @Column({ name: 'valor_residual_ufv', type: 'decimal', precision: 14, scale: 5, nullable: true, transformer: decimalTransformer })
     valor_residual_ufv?: number | null;
 
-    @Column({ name: 'amortizacion_gestion_ufv', type: 'decimal', precision: 14, scale: 4, nullable: true, transformer: decimalTransformer })
+    @Column({ name: 'amortizacion_gestion_ufv', type: 'decimal', precision: 14, scale: 5, nullable: true, transformer: decimalTransformer })
     amortizacion_gestion_ufv?: number | null;
 
-    @Column({ name: 'amortizacion_acumulada_ufv', type: 'decimal', precision: 14, scale: 4, nullable: true, transformer: decimalTransformer })
+    @Column({ name: 'amortizacion_acumulada_ufv', type: 'decimal', precision: 14, scale: 5, nullable: true, transformer: decimalTransformer })
     amortizacion_acumulada_ufv?: number | null;
 
-    @Column({ name: 'valor_libro_ufv', type: 'decimal', precision: 14, scale: 4, nullable: true, transformer: decimalTransformer })
+    @Column({ name: 'valor_libro_ufv', type: 'decimal', precision: 14, scale: 5, nullable: true, transformer: decimalTransformer })
     valor_libro_ufv?: number | null;
 
     @Column({ name: 'cotizacion_ufv_aplicada', type: 'decimal', precision: 12, scale: 6, nullable: true, transformer: decimalTransformer })
@@ -105,7 +105,4 @@ export class AmortizacionVacuno extends BaseAuditEntity {
 
     @Column({ name: 'tasa_amortizacion', type: 'decimal', precision: 5, scale: 2, nullable: true, transformer: decimalTransformer })
     tasa_amortizacion?: number | null;
-
-    @Column({ name: 'observaciones', type: 'varchar', length: 500, nullable: true })
-    observaciones?: string | null;
 }

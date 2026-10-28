@@ -1,6 +1,5 @@
 // C:\sistemas\sicab\sicab-backend\src\modules\tipos-semovientes\tipos-semovientes.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { Cache, CACHE_BASE } from '../../common/decorators/cache.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { InvalidateCache } from '../../common/decorators/invalidate-cache.decorator';
 import { CreateRateLimit, UpdateRateLimit, DeleteRateLimit, FindAllRateLimit, FindOneRateLimit, ArchiveRateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -33,7 +32,6 @@ export class TiposSemovientesController {
 
     @Get()
     @FindAllRateLimit()
-    @Cache('tipos_semovientes', CACHE_BASE)
     findAll(
         @Query(CustomValidationPipe({ concise: true })) query: FindTiposSemovientesQueryDto,
         @GetUser() user: AuthenticatedUser
@@ -43,7 +41,6 @@ export class TiposSemovientesController {
 
     @Get(':id')
     @FindOneRateLimit()
-    @Cache('tipos_semovientes', CACHE_BASE)
     findOne(
         @Param('id', ParseIntPipe) id: number,
         @GetUser() user: AuthenticatedUser

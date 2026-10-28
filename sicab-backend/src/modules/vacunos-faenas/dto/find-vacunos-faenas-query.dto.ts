@@ -31,6 +31,18 @@ export class FindVacunosFaenasQueryDto extends BasePaginationQueryDto {
     vacuno_id?: number;
 
     @IsOptional()
+    @Type(() => Number)
+    @IsInt({ message: 'empresa_id debe ser un número entero.' })
+    @Min(1, { message: 'empresa_id debe ser mayor a 0.' })
+    empresa_id?: number;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt({ message: 'sucursal_id debe ser un número entero.' })
+    @Min(1, { message: 'sucursal_id debe ser mayor a 0.' })
+    sucursal_id?: number;
+
+    @IsOptional()
     @IsDateString({}, { message: 'fecha_faena_desde debe ser una fecha válida (YYYY-MM-DD).' })
     fecha_faena_desde?: string;
 
@@ -41,11 +53,19 @@ export class FindVacunosFaenasQueryDto extends BasePaginationQueryDto {
     static getCampos(): string[] {
         const alias = 't';
         const aliasVac = 'v';
+        const aliasSuc = 'suc';
+        const aliasEmp = 'emp';
         return [
             `${alias}.faena_id`,
             `${alias}.vacuno_id`,
             `${aliasVac}.arete AS vacuno_arete`,
             `${aliasVac}.nombre AS vacuno_nombre`,
+            `${aliasVac}.sucursal_id`,
+            `${aliasSuc}.sucursal AS sucursal_nombre`,
+            `${aliasSuc}.codigo AS sucursal_codigo`,
+            `${aliasSuc}.empresa_id`,
+            `${aliasEmp}.empresa AS empresa_nombre`,
+            `${aliasEmp}.codigo AS empresa_codigo`,
             `${alias}.fecha_faena`,
             `${alias}.peso_vivo_faena`,
             `${alias}.peso_canal_caliente`,
@@ -65,7 +85,7 @@ export class FindVacunosFaenasQueryDto extends BasePaginationQueryDto {
     }
 
     static getCamposParaQ(): string[] {
-        return ['matadero', 'numero_guia', 'observaciones', 'v.arete', 'v.nombre'];
+        return ['matadero', 'numero_guia', 'observaciones', 'v.arete', 'v.nombre', 'suc.sucursal', 'suc.codigo', 'emp.empresa', 'emp.codigo'];
     }
 
     static getCamposPermitidosParaOrdenar(): string[] {
@@ -76,7 +96,12 @@ export class FindVacunosFaenasQueryDto extends BasePaginationQueryDto {
             'vacuno_nombre',
             'fecha_faena',
             'peso_vivo_faena',
-            'rendimiento_canal'
+            'rendimiento_canal',
+            'sucursal_id',
+            'sucursal_nombre',
+            'sucursal_codigo',
+            'empresa_nombre',
+            'empresa_codigo'
         ];
     }
 
@@ -91,6 +116,8 @@ export class FindVacunosFaenasQueryDto extends BasePaginationQueryDto {
     static getEquivalenciasMapeo(): Record<string, string> {
         const alias = 't';
         const aliasVac = 'v';
+        const aliasSuc = 'suc';
+        const aliasEmp = 'emp';
         return {
             'faena_id': `${alias}.faena_id`,
             'vacuno_id': `${alias}.vacuno_id`,
@@ -104,6 +131,11 @@ export class FindVacunosFaenasQueryDto extends BasePaginationQueryDto {
             'matadero': `${alias}.matadero`,
             'numero_guia': `${alias}.numero_guia`,
             'observaciones': `${alias}.observaciones`,
+            'sucursal_id': `${aliasVac}.sucursal_id`,
+            'sucursal_nombre': `${aliasSuc}.sucursal`,
+            'sucursal_codigo': `${aliasSuc}.codigo`,
+            'empresa_nombre': `${aliasEmp}.empresa`,
+            'empresa_codigo': `${aliasEmp}.codigo`,
             'estado_id': `${alias}.estado_id`,
             'usuario_id_registro': `${alias}.usuario_id_registro`,
             'usuario_id_actualizacion': `${alias}.usuario_id_actualizacion`,
